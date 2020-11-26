@@ -1,0 +1,16 @@
+.ui.button.btngrp-bar {
+  width: 30px;
+  padding: 6px;
+}
+
+.btngrp-bar.ui.basic.button:focus,
+.ui.basic.buttons .btngrp-bar.button:focus {
+  box-shadow: unset;
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+button.btngrp-bar.ui.basic.button.primary.big-outline {
+  color: #2185d0 !important;
+  font-weight: bold;
+  box-shadow: 0 0 0 2px #2185d0 inset !important;
+}
