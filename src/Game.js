@@ -2,6 +2,7 @@ import * as React from 'react';
 import useGame from './useGame';
 import { Button, Label } from 'semantic-ui-react';
 import { StatusBar } from './StatusBar';
+import { CardSpace } from './CardSpace';
 
 const seatPositions = [
   { top: '10px', left: '260px', bottom: '', right: '' },
@@ -24,12 +25,30 @@ export function Game({ socketRef }) {
     return acc;
   }, 0);
 
+  const seatIndex = getSeatIndex();
+
+  const cardObjects = (gameData.cards[seatIndex] || []).map(card => ({ id: card, name: card }));
+
   function chooseSeat(seatIndex) {
     sendMessage('chooseSeat', seatIndex);
   }
 
   function setGameStatus(status) {
     sendMessage('setGameStatus', status);
+  }
+
+  function leaveGame() {
+    sendMessage('leaveGame', null);
+  }
+
+  function getSeatIndex() {
+    let seatIndex = null;
+    for (let i = 0; i < gameData.seated.length; i++) {
+      if (gameData.seated[i] === socketRef.current.id) {
+        seatIndex = i;
+      }
+    }
+    return seatIndex;
   }
 
   return (
@@ -39,13 +58,15 @@ export function Game({ socketRef }) {
         seatedCount={seatedCount}
         socketRef={socketRef}
         setGameStatus={setGameStatus}
+        leaveGame={leaveGame}
+        seatIndex={seatIndex}
       />
 
       <div
         style={{
           position: 'relative',
           marginLeft: '10px',
-          width: '600px',
+          width: '780px',
           height: '300px',
           border: '1px solid red',
         }}
@@ -82,12 +103,7 @@ export function Game({ socketRef }) {
         })}
       </div>
 
-      <div>Cards</div>
-      <img
-        src="cards/9D.svg"
-        style={{ width: '60px', height: 'auto' }}
-        alt="Kiwi standing on oval"
-      ></img>
+      <CardSpace seatIndex={seatIndex} stage={gameData.stage} cardObjects={cardObjects} />
     </div>
   );
 }

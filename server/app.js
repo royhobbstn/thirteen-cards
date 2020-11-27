@@ -3,7 +3,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
 const Deck = require('card-deck');
-const { orderedCards } = require('./cards');
+const { orderedCards, cardRank } = require('./cards');
 
 const port = process.env.PORT || 4000;
 
@@ -130,15 +130,45 @@ io.on('connection', socket => {
 
       roomData[roomName].seated.forEach((seat, index) => {
         if (seat !== null) {
-          roomData[roomName].cards[index] = myDeck.draw(13);
+          roomData[roomName].cards[index] = [...myDeck.draw(13)].sort((a, b) => {
+            return cardRank[b] - cardRank[a];
+          });
         }
       });
 
       // determine who's turn it is.
+      // take a look at last card for every player, whoever has lowest is assigned Turn
+
+      let lowestRankingCard = 53;
+      let indexOfLowestRankingCardSeat = null;
+      for (let i = 0; i < roomData[roomName].cards.length; i++) {
+        const cardsAtSeat = roomData[roomName].cards[i];
+        if (cardsAtSeat !== null) {
+          console.log(i, cardsAtSeat[12]);
+          if (cardRank[cardsAtSeat[12]] < lowestRankingCard) {
+            indexOfLowestRankingCardSeat = i;
+            lowestRankingCard = cardRank[cardsAtSeat[12]];
+          }
+        }
+      }
+      roomData[roomName].turnIndex = indexOfLowestRankingCardSeat;
     }
 
     // actually set status
     roomData[roomName].stage = updatedStatus;
+    sendToEveryone(io, roomName, roomData[roomName]);
+  });
+
+  socket.on('leaveGame', () => {
+    roomData[roomName].lastModified = Date.now();
+
+    roomData[roomName].seated = roomData[roomName].seated.map(seat => {
+      if (seat === socket.id) {
+        return null;
+      }
+      return seat;
+    });
+
     sendToEveryone(io, roomName, roomData[roomName]);
   });
 

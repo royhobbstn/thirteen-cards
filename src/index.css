@@ -14,3 +14,7 @@ button.btngrp-bar.ui.basic.button.primary.big-outline {
   font-weight: bold;
   box-shadow: 0 0 0 2px #2185d0 inset !important;
 }
+
+.box-shadow {
+  box-shadow: 2px 2px 4px;
+}
