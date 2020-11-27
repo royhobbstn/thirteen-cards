@@ -2,6 +2,9 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
+const Deck = require('card-deck');
+const { orderedCards } = require('./cards');
+
 const port = process.env.PORT || 4000;
 
 const app = express();
@@ -35,6 +38,14 @@ io.on('connection', socket => {
     room.aliases = {}; // { socketId: alias }
     room.colors = {}; // {socketId: #hex },
     room.players = []; // array of socketIds
+    /*** specific below ***/
+    room.seated = [null, null, null, null]; // corresponds to table position. value of null is empty, '--name' is an AI, 'kslfkjahsdf' is a socket.id
+    room.cards = [null, null, null, null]; // corresponds to table position.  value of null is empty, (non-ordered... let it be uncontrolled on client)
+    room.submitted = []; // [array of cards currently submitted] or [] empty array for 'pass'.
+    room.last = ['pass', null, 'pass', 'pass']; // [arr, null, pass, pass], corresponds to table position, value of null is empty.
+    room.stage = 'seating'; // seating | game | done
+    room.turnIndex = 0; // seat Index whos turn it is.
+    room.board = []; // array of cards currently on the board
   }
 
   // initial setup for a newly connected player
@@ -80,12 +91,77 @@ io.on('connection', socket => {
     sendToEveryone(io, roomName, roomData[roomName]);
   });
 
+  /* game specific messages */
+
+  socket.on('chooseSeat', message => {
+    const clickedSeatIndex = message.body;
+
+    roomData[roomName].lastModified = Date.now();
+
+    // if already at a previous seat, remove
+    // also; since Stand Up button routes here, if clickedSeatIndex is same, set flag
+    let dontSit = false;
+    roomData[roomName].seated = roomData[roomName].seated.map((seat, seatIndex) => {
+      if (seat === socket.id) {
+        if (clickedSeatIndex === seatIndex) {
+          dontSit = true;
+        }
+        return null;
+      }
+      return seat;
+    });
+
+    // actually sit
+    if (!dontSit) {
+      if (roomData[roomName]) roomData[roomName].seated[clickedSeatIndex] = socket.id;
+    }
+
+    sendToEveryone(io, roomName, roomData[roomName]);
+  });
+
+  socket.on('setGameStatus', message => {
+    const updatedStatus = message.body;
+    roomData[roomName].lastModified = Date.now();
+
+    if (updatedStatus === 'game') {
+      // deal cards
+      const myDeck = new Deck(orderedCards);
+      myDeck.shuffle();
+
+      roomData[roomName].seated.forEach((seat, index) => {
+        if (seat !== null) {
+          roomData[roomName].cards[index] = myDeck.draw(13);
+        }
+      });
+
+      // determine who's turn it is.
+    }
+
+    // actually set status
+    roomData[roomName].stage = updatedStatus;
+    sendToEveryone(io, roomName, roomData[roomName]);
+  });
+
+  /* end game specific messages */
+
   // Leave the room if the user closes the socket
   socket.on('disconnect', () => {
     roomData[roomName].lastModified = Date.now();
 
     console.log(`Client ${socket.id} disconnected`);
     roomData[roomName].players = roomData[roomName].players.filter(d => d !== socket.id);
+
+    roomData[roomName].seated = roomData[roomName].seated.map(seat => {
+      if (seat === socket.id) {
+        if (roomData[roomName].stage === 'seating' || roomData[roomName] === 'done') {
+          return null;
+        }
+        // for when stage === 'game':
+        return 'disconnected';
+      } else {
+        return seat;
+      }
+    });
 
     io.in(roomName).emit(CHAT, {
       body: `${roomData[roomName].aliases[socket.id]} has disconnected`,
