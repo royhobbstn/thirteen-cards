@@ -144,7 +144,6 @@ io.on('connection', socket => {
       for (let i = 0; i < roomData[roomName].cards.length; i++) {
         const cardsAtSeat = roomData[roomName].cards[i];
         if (cardsAtSeat !== null) {
-          console.log(i, cardsAtSeat[12]);
           if (cardRank[cardsAtSeat[12]] < lowestRankingCard) {
             indexOfLowestRankingCardSeat = i;
             lowestRankingCard = cardRank[cardsAtSeat[12]];

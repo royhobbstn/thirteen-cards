@@ -1,14 +1,7 @@
 import * as React from 'react';
 import { Menu, Button } from 'semantic-ui-react';
 
-export function StatusBar({
-  gameData,
-  seatedCount,
-  socketRef,
-  setGameStatus,
-  leaveGame,
-  seatIndex,
-}) {
+export function StatusBar({ gameData, seatedCount, socketRef, seatIndex, sendMessage }) {
   const isSeated = gameData.seated.some(seat => {
     return seat === socketRef.current.id;
   });
@@ -20,7 +13,7 @@ export function StatusBar({
           {!isSeated ? <Menu.Item header>Pick a Seat...</Menu.Item> : null}
           {seatedCount >= 2 ? (
             <Menu.Item position="right">
-              <Button onClick={() => setGameStatus('game')}>Start Game</Button>
+              <Button onClick={() => sendMessage('setGameStatus', 'game')}>Start Game</Button>
             </Menu.Item>
           ) : null}
         </React.Fragment>
@@ -28,7 +21,7 @@ export function StatusBar({
       {gameData.stage === 'game' && seatIndex !== null ? (
         <React.Fragment>
           <Menu.Item position="right">
-            <Button onClick={() => leaveGame()}>Leave</Button>
+            <Button onClick={() => sendMessage('leaveGame', null)}>Leave</Button>
           </Menu.Item>
         </React.Fragment>
       ) : null}

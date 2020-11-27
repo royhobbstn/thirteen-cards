@@ -11,8 +11,6 @@ export function CardSpace({ seatIndex, stage, cardObjects }) {
 
   // if mismatch between listState and original
   if (cardObjects.length !== listState.length + scratchState.length) {
-    console.log('refresh from server cards');
-
     updateListState(cardObjects);
     // scratchState should already be empty
   }
@@ -46,7 +44,13 @@ export function CardSpace({ seatIndex, stage, cardObjects }) {
                       margin: '2px',
                     }}
                   >
-                    <span style={{ margin: 'auto' }}>{card.id}</span>
+                    <img
+                      key={card.id}
+                      className="box-shadow"
+                      style={{ width: '56px', height: 'auto', display: 'inline-block' }}
+                      alt={card.id}
+                      src={`cards/${card.id}.svg`}
+                    />
                   </div>
                 );
               })}
@@ -67,7 +71,13 @@ export function CardSpace({ seatIndex, stage, cardObjects }) {
                       margin: '2px',
                     }}
                   >
-                    <span style={{ margin: 'auto' }}>{card.id}</span>
+                    <img
+                      key={card.id}
+                      className="box-shadow"
+                      style={{ width: '56px', height: 'auto', display: 'inline-block' }}
+                      alt={card.id}
+                      src={`cards/${card.id}.svg`}
+                    />
                   </div>
                 );
               })}
@@ -78,11 +88,3 @@ export function CardSpace({ seatIndex, stage, cardObjects }) {
     </div>
   );
 }
-
-// <img
-//   key={card.id}
-//   className="box-shadow"
-//   style={{ width: '56px', height: 'auto', display: 'inline-block' }}
-//   alt={card.id}
-//   src={`cards/${card.id}.svg`}
-// />
