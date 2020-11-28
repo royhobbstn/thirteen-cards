@@ -29,8 +29,8 @@
     "dev": "NODE_ENV=development react-scripts start",
     "build": "react-scripts build",
     "eject": "react-scripts eject",
-    "server-dev": "NODE_ENV=development nodemon server/app.js",
-    "start": "NODE_ENV=production node server/app.js"
+    "server-dev": "NODE_ENV=development nodemon src/server/app.js",
+    "start": "NODE_ENV=production node src/server/app.js"
   },
   "eslintConfig": {
     "extends": [

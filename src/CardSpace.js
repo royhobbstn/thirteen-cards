@@ -1,9 +1,12 @@
 import * as React from 'react';
 import { ReactSortable } from 'react-sortablejs';
+const { getDetectedCards } = require('./server/detectedCards.js');
 
 export function CardSpace({ seatIndex, stage, cardObjects }) {
   const [listState, updateListState] = React.useState(cardObjects);
   const [scratchState, updateScratchState] = React.useState([]);
+
+  const detectedHand = getDetectedCards(scratchState);
 
   if (seatIndex == null) {
     return null;
@@ -83,6 +86,7 @@ export function CardSpace({ seatIndex, stage, cardObjects }) {
               })}
             </ReactSortable>
           </div>
+          <p>{detectedHand}</p>
         </div>
       ) : null}
     </div>
