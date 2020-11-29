@@ -1,16 +1,16 @@
 import * as React from 'react';
 import { ReactSortable } from 'react-sortablejs';
-const { getDetectedCards } = require('./server/detectedCards.js');
+const { getDetectedCards } = require('./cardUtils/detectedCards');
 
 export function CardSpace({ seatIndex, stage, cardObjects }) {
   const [listState, updateListState] = React.useState(cardObjects);
   const [scratchState, updateScratchState] = React.useState([]);
 
-  const detectedHand = getDetectedCards(scratchState);
-
   if (seatIndex == null) {
     return null;
   }
+
+  const detectedHand = getDetectedCards(scratchState);
 
   // if mismatch between listState and original
   if (cardObjects.length !== listState.length + scratchState.length) {
@@ -33,7 +33,7 @@ export function CardSpace({ seatIndex, stage, cardObjects }) {
       {seatIndex !== null && stage !== 'seating' ? (
         <div>
           <div style={{ height: '100px', width: '780px', marginLeft: '10px', marginTop: '10px' }}>
-            <ReactSortable list={listState} setList={updateListState} animation="150">
+            <ReactSortable list={listState} setList={updateListState}>
               {listState.map(card => {
                 return (
                   <div
@@ -86,7 +86,7 @@ export function CardSpace({ seatIndex, stage, cardObjects }) {
               })}
             </ReactSortable>
           </div>
-          <p>{detectedHand}</p>
+          <p>{JSON.stringify(detectedHand)}</p>
         </div>
       ) : null}
     </div>

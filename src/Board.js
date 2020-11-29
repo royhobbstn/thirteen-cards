@@ -25,7 +25,10 @@ export function Board({ gameData, sendMessage, socketRef }) {
             key={seatIndex}
             style={{
               position: 'absolute',
-              border: '1px solid green',
+              border:
+                gameData.turnIndex === seatIndex && gameData.stage === 'game'
+                  ? '2px solid red'
+                  : '1px solid green',
               width: '80px',
               height: '80px',
               top: seatPositions[seatIndex].top,

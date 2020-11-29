@@ -1,4 +1,4 @@
-exports.orderedCards = [
+export const orderedCards = [
   '3c',
   '3d',
   '3h',
@@ -53,7 +53,7 @@ exports.orderedCards = [
   '2s',
 ];
 
-exports.cardRank = {
+export const cardRank = {
   '3c': 1,
   '3d': 2,
   '3h': 3,
@@ -108,7 +108,7 @@ exports.cardRank = {
   '2s': 52,
 };
 
-exports.faceRank = {
+export const faceRank = {
   3: 1,
   4: 2,
   5: 3,

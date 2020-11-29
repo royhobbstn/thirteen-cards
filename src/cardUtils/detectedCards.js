@@ -1,19 +1,19 @@
-const { cardRank } = require('./cards.js');
-const { detectCards_1 } = require('./handReading/detect_1.js');
-const { detectCards_2 } = require('./handReading/detect_2.js');
-const { detectCards_3 } = require('./handReading/detect_3.js');
-const { detectCards_4 } = require('./handReading/detect_4.js');
-const { detectCards_5 } = require('./handReading/detect_5.js');
-const { detectCards_6 } = require('./handReading/detect_6.js');
-const { detectCards_7 } = require('./handReading/detect_7.js');
-const { detectCards_8 } = require('./handReading/detect_8.js');
-const { detectCards_9 } = require('./handReading/detect_9.js');
-const { detectCards_10 } = require('./handReading/detect_10.js');
-const { detectCards_11 } = require('./handReading/detect_11.js');
-const { detectCards_12 } = require('./handReading/detect_12.js');
-const { detectCards_13 } = require('./handReading/detect_13.js');
+import { cardRank, faceRank } from './cards';
+import { detectCards_1 } from './detect_1';
+import { detectCards_2 } from './detect_2';
+import { detectCards_3 } from './detect_3';
+import { detectCards_4 } from './detect_4';
+import { detectCards_5 } from './detect_5';
+import { detectCards_6 } from './detect_6';
+import { detectCards_7 } from './detect_7';
+import { detectCards_8 } from './detect_8';
+import { detectCards_9 } from './detect_9';
+import { detectCards_10 } from './detect_10';
+import { detectCards_11 } from './detect_11';
+import { detectCards_12 } from './detect_12';
+import { detectCards_13 } from './detect_13';
 
-exports.getDetectedCards = function (originalCards) {
+export const getDetectedCards = originalCards => {
   const cards = JSON.parse(JSON.stringify(originalCards));
 
   // sort cards by rank (high to low)
@@ -25,13 +25,9 @@ exports.getDetectedCards = function (originalCards) {
   // number hash map cards
   const faceMap = createFaceMap(cards);
 
-  console.log(suitMap);
-
-  console.log(faceMap);
-
   switch (cards.length) {
     case 0:
-      return 'Nothing';
+      return { name: '', play: '', rank: 0 };
     case 1:
       return detectCards_1(cards, suitMap, faceMap);
     case 2:
@@ -59,7 +55,7 @@ exports.getDetectedCards = function (originalCards) {
     case 13:
       return detectCards_13(cards, suitMap, faceMap);
     default:
-      return 'Unexpected';
+      return { name: '', play: '', rank: 0 };
   }
 };
 
@@ -90,3 +86,31 @@ function createFaceMap(cards) {
   }
   return faceMap;
 }
+
+export const getConsecutiveness = hand => {
+  const cards = JSON.parse(JSON.stringify(hand));
+
+  cards.sort((a, b) => {
+    return cardRank[b.id] - cardRank[a.id];
+  });
+
+  let last = null;
+
+  for (let card of cards) {
+    const cardFace = card.id[0];
+
+    if (!last) {
+      last = faceRank[cardFace];
+      continue;
+    }
+
+    if (faceRank[cardFace] === last - 1) {
+      last = faceRank[cardFace];
+      continue;
+    } else {
+      return false;
+    }
+  }
+
+  return true;
+};

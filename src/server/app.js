@@ -1,9 +1,9 @@
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const path = require('path');
-const Deck = require('card-deck');
-const { orderedCards, cardRank } = require('./cards');
+import express from 'express';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import path from 'path';
+import Deck from 'card-deck';
+import { orderedCards, cardRank } from '../cardUtils/cards.js';
 
 const port = process.env.PORT || 4000;
 
@@ -15,8 +15,8 @@ app.get('*', function (req, res) {
   res.sendFile('index.html', { root: path.join(__dirname, '../build/') });
 });
 
-const server = http.createServer(app);
-const io = socketIo(server);
+const server = createServer(app);
+const io = new Server(server);
 
 const roomData = {};
 cleanUpRoomData();
