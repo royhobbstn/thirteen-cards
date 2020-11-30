@@ -1,5 +1,5 @@
-import { cardRank } from './cards';
-import { getConsecutiveness } from './detectedCards';
+import { cardRank } from './cards.js';
+import { getConsecutiveness } from './detectedCards.js';
 
 export const detectCards_5 = (cards, suitMap, faceMap) => {
   let flush = null;
@@ -28,7 +28,7 @@ export const detectCards_5 = (cards, suitMap, faceMap) => {
     return {
       name: `Straight Flush, ${cards[0].id} high`,
       play: 'Straight Flush',
-      rank: cardRank[cards[0].id],
+      rank: 100 + cardRank[cards[0].id],
     };
   }
 

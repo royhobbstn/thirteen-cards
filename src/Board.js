@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Button, Label } from 'semantic-ui-react';
+import BackgroundImg from './images/table-bg.jpg';
 
 const seatPositions = [
   { top: '10px', left: '260px', bottom: '', right: '' },
@@ -16,9 +17,28 @@ export function Board({ gameData, sendMessage, socketRef }) {
         marginLeft: '10px',
         width: '780px',
         height: '300px',
-        border: '1px solid red',
+        borderRadius: '15px',
+        backgroundImage: `url(${BackgroundImg})`,
       }}
     >
+      {gameData.board.map((card, index) => {
+        return (
+          <img
+            key={card}
+            style={{
+              position: 'absolute',
+              width: '56px',
+              height: 'auto',
+              top: '100px',
+              left: 120 + 30 * index + 'px',
+              display: 'inline-block',
+            }}
+            className="box-shadow"
+            alt={card}
+            src={`cards/${card}.svg`}
+          />
+        );
+      })}
       {[0, 1, 2, 3].map(seatIndex => {
         return (
           <div
@@ -27,8 +47,8 @@ export function Board({ gameData, sendMessage, socketRef }) {
               position: 'absolute',
               border:
                 gameData.turnIndex === seatIndex && gameData.stage === 'game'
-                  ? '2px solid red'
-                  : '1px solid green',
+                  ? '2px solid green'
+                  : '1px solid grey',
               width: '80px',
               height: '80px',
               top: seatPositions[seatIndex].top,
@@ -48,7 +68,7 @@ export function Board({ gameData, sendMessage, socketRef }) {
                 Stand Up
               </Button>
             ) : null}
-            <Label>{gameData.seated[seatIndex]}</Label>
+            <p>{gameData.aliases[gameData.seated[seatIndex]]}</p>
           </div>
         );
       })}

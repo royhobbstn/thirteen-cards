@@ -1,4 +1,4 @@
-import { cardRank } from './cards';
+import { cardRank } from './cards.js';
 
 export const detectCards_1 = (cards, suitMap, faceMap) => {
   //

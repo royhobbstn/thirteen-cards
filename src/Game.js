@@ -44,7 +44,13 @@ export function Game({ socketRef }) {
 
       <Board gameData={gameData} sendMessage={sendMessage} socketRef={socketRef} />
 
-      <CardSpace seatIndex={seatIndex} stage={gameData.stage} cardObjects={cardObjects} />
+      <CardSpace
+        gameData={gameData}
+        seatIndex={seatIndex}
+        stage={gameData.stage}
+        cardObjects={cardObjects}
+        sendMessage={sendMessage}
+      />
     </div>
   );
 }

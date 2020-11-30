@@ -1,9 +1,13 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import path from 'path';
+import path, { dirname } from 'path';
 import Deck from 'card-deck';
 import { orderedCards, cardRank } from '../cardUtils/cards.js';
+import { getDetectedCards } from '../cardUtils/detectedCards.js';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const port = process.env.PORT || 4000;
 
@@ -42,7 +46,9 @@ io.on('connection', socket => {
     room.seated = [null, null, null, null]; // corresponds to table position. value of null is empty, '--name' is an AI, 'kslfkjahsdf' is a socket.id
     room.cards = [null, null, null, null]; // corresponds to table position.  value of null is empty, (non-ordered... let it be uncontrolled on client)
     room.submitted = []; // [array of cards currently submitted] or [] empty array for 'pass'.
-    room.last = ['pass', null, 'pass', 'pass']; // [arr, null, pass, pass], corresponds to table position, value of null is empty.
+    room.last = [null, null, null, null]; // [obj, null, pass, pass], corresponds to table position, value of null is empty. obj is detected hand object
+    room.initial = true; // flag to indicate no hands have been played yet.  Purpose is when to necessitate hand must be played with lowest card available.
+    room.lowest = null; // lowest card dealt.  must be played in first hand of game.
     room.stage = 'seating'; // seating | game | done
     room.turnIndex = 0; // seat Index whos turn it is.
     room.board = []; // array of cards currently on the board
@@ -147,6 +153,7 @@ io.on('connection', socket => {
           if (cardRank[cardsAtSeat[12]] < lowestRankingCard) {
             indexOfLowestRankingCardSeat = i;
             lowestRankingCard = cardRank[cardsAtSeat[12]];
+            roomData[roomName].lowest = cardsAtSeat[12];
           }
         }
       }
@@ -155,6 +162,67 @@ io.on('connection', socket => {
 
     // actually set status
     roomData[roomName].stage = updatedStatus;
+    sendToEveryone(io, roomName, roomData[roomName]);
+  });
+
+  socket.on('submitHand', message => {
+    roomData[roomName].lastModified = Date.now();
+    roomData[roomName].initial = false;
+
+    // todo :  if initial = true and doesnt contain lowest card
+    // (shouldnt happen unless someone is tampering with calls)
+
+    // todo: same as above, shouldnt happen, but enforce that submitted
+    // cards are > rank than board cards, and are on same play path
+    // ex: Singles, Pairs, etc
+
+    const detectedHand = getDetectedCards(message.body);
+    console.log(detectedHand);
+
+    const submittedHand = message.body.map(d => d.id);
+
+    // populate / sort board
+    roomData[roomName].board = [...submittedHand].sort((a, b) => {
+      return cardRank[b] - cardRank[a];
+    });
+
+    // find which seat message came from
+    let seatIndex = roomData[roomName].seated.reduce((acc, seatSocket, index) => {
+      if (seatSocket === socket.id) {
+        acc = index;
+      }
+      return acc;
+    }, null);
+
+    // populate last play for seat
+    roomData[roomName].last[seatIndex] = detectedHand;
+
+    // subtract cards from hand
+    roomData[roomName].cards[seatIndex] = roomData[roomName].cards[seatIndex].filter(card => {
+      return !submittedHand.includes(card);
+    });
+
+    roomData[roomName].turnIndex = findNextPlayersTurn(roomData[roomName]);
+
+    sendToEveryone(io, roomName, roomData[roomName]);
+  });
+
+  socket.on('passTurn', () => {
+    roomData[roomName].lastModified = Date.now();
+    roomData[roomName].turnIndex = findNextPlayersTurn(roomData[roomName]);
+
+    // find which seat message came from
+    let seatIndex = roomData[roomName].seated.reduce((acc, seatSocket, index) => {
+      if (seatSocket === socket.id) {
+        acc = index;
+      }
+      return acc;
+    }, null);
+    roomData[roomName].last[seatIndex] = 'pass';
+
+    // todo, determine if board has been passed around.
+    // if so, clear cards on board and allow next player to play whatever
+
     sendToEveryone(io, roomName, roomData[roomName]);
   });
 
@@ -227,4 +295,28 @@ function cleanUpRoomData() {
       }
     }
   }, 300000);
+}
+
+function findNextPlayersTurn(room) {
+  let nextPlayer = null;
+
+  // find next players turn
+  for (let i = 1; i <= 4; i++) {
+    let seatIndex = room.turnIndex + i;
+    if (seatIndex > 3) {
+      seatIndex = seatIndex - 4;
+    }
+    if (room.seated[seatIndex]) {
+      // if theres someone sitting here, it's a valid seat
+      // TODO what if this person already won and we're playing for 2nd, 3rd place?
+      nextPlayer = seatIndex;
+      break;
+    }
+  }
+
+  if (nextPlayer === null) {
+    throw new Error('could not determine next player', JSON.stringify(roomData[roomName]));
+  }
+
+  return nextPlayer;
 }

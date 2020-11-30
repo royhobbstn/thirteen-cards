@@ -1,17 +1,17 @@
-import { cardRank, faceRank } from './cards';
-import { detectCards_1 } from './detect_1';
-import { detectCards_2 } from './detect_2';
-import { detectCards_3 } from './detect_3';
-import { detectCards_4 } from './detect_4';
-import { detectCards_5 } from './detect_5';
-import { detectCards_6 } from './detect_6';
-import { detectCards_7 } from './detect_7';
-import { detectCards_8 } from './detect_8';
-import { detectCards_9 } from './detect_9';
-import { detectCards_10 } from './detect_10';
-import { detectCards_11 } from './detect_11';
-import { detectCards_12 } from './detect_12';
-import { detectCards_13 } from './detect_13';
+import { cardRank, faceRank } from './cards.js';
+import { detectCards_1 } from './detect_1.js';
+import { detectCards_2 } from './detect_2.js';
+import { detectCards_3 } from './detect_3.js';
+import { detectCards_4 } from './detect_4.js';
+import { detectCards_5 } from './detect_5.js';
+import { detectCards_6 } from './detect_6.js';
+import { detectCards_7 } from './detect_7.js';
+import { detectCards_8 } from './detect_8.js';
+import { detectCards_9 } from './detect_9.js';
+import { detectCards_10 } from './detect_10.js';
+import { detectCards_11 } from './detect_11.js';
+import { detectCards_12 } from './detect_12.js';
+import { detectCards_13 } from './detect_13.js';
 
 export const getDetectedCards = originalCards => {
   const cards = JSON.parse(JSON.stringify(originalCards));

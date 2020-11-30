@@ -1,5 +1,5 @@
-import { cardRank } from './cards';
-import { getConsecutiveness } from './detectedCards';
+import { cardRank } from './cards.js';
+import { getConsecutiveness } from './detectedCards.js';
 
 export const detectCards_6 = (cards, suitMap, faceMap) => {
   // 6 card straight
@@ -24,7 +24,7 @@ export const detectCards_6 = (cards, suitMap, faceMap) => {
         return {
           name: `Bomb! 3 Consecutive Pairs, ${cards[0].id} high`,
           play: 'Bomb',
-          rank: 100 + cardRank[cards[0].id],
+          rank: 200 + cardRank[cards[0].id],
         };
       }
     }

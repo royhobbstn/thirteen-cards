@@ -20,6 +20,15 @@ export function StatusBar({ gameData, seatedCount, socketRef, seatIndex, sendMes
       ) : null}
       {gameData.stage === 'game' && seatIndex !== null ? (
         <React.Fragment>
+          {seatIndex === gameData.turnIndex ? (
+            <Menu.Item header>
+              <span style={{ color: 'green' }}>Your Turn!</span> Playing ..todo..
+            </Menu.Item>
+          ) : (
+            <Menu.Item header>
+              {gameData.aliases[gameData.seated[gameData.turnIndex]]} playing ..todo..
+            </Menu.Item>
+          )}
           <Menu.Item position="right">
             <Button onClick={() => sendMessage('leaveGame', null)}>Leave</Button>
           </Menu.Item>

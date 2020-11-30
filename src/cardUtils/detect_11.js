@@ -1,5 +1,5 @@
-import { cardRank } from './cards';
-import { getConsecutiveness } from './detectedCards';
+import { cardRank } from './cards.js';
+import { getConsecutiveness } from './detectedCards.js';
 
 export const detectCards_11 = (cards, suitMap, faceMap) => {
   // 11 card straight

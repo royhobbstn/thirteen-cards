@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { ReactSortable } from 'react-sortablejs';
-const { getDetectedCards } = require('./cardUtils/detectedCards');
+import { Button } from 'semantic-ui-react';
+import { getDetectedCards } from './cardUtils/detectedCards';
 
-export function CardSpace({ seatIndex, stage, cardObjects }) {
+export function CardSpace({ seatIndex, stage, cardObjects, sendMessage, gameData }) {
   const [listState, updateListState] = React.useState(cardObjects);
   const [scratchState, updateScratchState] = React.useState([]);
 
@@ -12,10 +13,12 @@ export function CardSpace({ seatIndex, stage, cardObjects }) {
 
   const detectedHand = getDetectedCards(scratchState);
 
+  const isYourTurn = seatIndex === gameData.turnIndex;
+
   // if mismatch between listState and original
   if (cardObjects.length !== listState.length + scratchState.length) {
     updateListState(cardObjects);
-    // scratchState should already be empty
+    updateScratchState([]);
   }
 
   function addCardToScratch(card) {
@@ -26,6 +29,76 @@ export function CardSpace({ seatIndex, stage, cardObjects }) {
   function returnCardToMain(card) {
     updateListState([...listState, { id: card, name: card }]);
     updateScratchState([...scratchState.filter(d => d.id !== card)]);
+  }
+
+  function submitHand() {
+    sendMessage('submitHand', scratchState);
+  }
+
+  function passTurn() {
+    sendMessage('passTurn');
+  }
+
+  function missingLowCard() {
+    return gameData.initial && !scratchState.some(card => card.id === gameData.lowest);
+  }
+
+  function getLastPlay() {
+    let lastPlay = null;
+
+    // find previous 3 players actions
+    for (let i = 1; i <= 3; i++) {
+      let currentIndex = seatIndex - i;
+      if (currentIndex < 0) {
+        currentIndex = currentIndex + 4;
+      }
+      if (gameData.last[currentIndex] !== null && gameData.last[currentIndex] !== 'pass') {
+        lastPlay = gameData.last[currentIndex];
+        break;
+      }
+    }
+
+    if (!lastPlay) {
+      return { name: 'Free Play', play: 'Free Play', rank: 0 };
+    }
+
+    return lastPlay;
+  }
+
+  function restrictPlay() {
+    // enforce game rules here
+    // false = okay to play
+    // true = disable submit button
+
+    const lastPlay = getLastPlay();
+
+    if (lastPlay.play === 'Free Play') {
+      return false;
+    }
+
+    // this section allows bombs to be played on anything
+    // and straight flushes to be played on Straights or Flushes
+    let playTypeValidation = false;
+    if (detectedHand.play === lastPlay.play) {
+      playTypeValidation = true;
+    }
+    if (detectedHand.play === 'Bomb') {
+      playTypeValidation = true;
+    }
+
+    if (lastPlay.play === 'Straight' && detectedHand.play === 'Straight Flush') {
+      playTypeValidation = true;
+    }
+
+    if (lastPlay.play === 'Flush' && detectedHand.play === 'Straight Flush') {
+      playTypeValidation = true;
+    }
+
+    if (playTypeValidation && detectedHand.rank > lastPlay.rank) {
+      return false;
+    }
+
+    return true;
   }
 
   return (
@@ -87,6 +160,20 @@ export function CardSpace({ seatIndex, stage, cardObjects }) {
             </ReactSortable>
           </div>
           <p>{JSON.stringify(detectedHand)}</p>
+          <Button
+            disabled={detectedHand.rank === 0 || !isYourTurn || missingLowCard() || restrictPlay()}
+            onClick={() => submitHand()}
+          >
+            Submit Hand
+          </Button>
+          <Button disabled={!isYourTurn} onClick={() => passTurn()}>
+            Pass
+          </Button>
+          {isYourTurn && missingLowCard() ? (
+            <p>
+              {`You must play the lowest card ( ${gameData.lowest} ) as part of your first hand.`}
+            </p>
+          ) : null}
         </div>
       ) : null}
     </div>

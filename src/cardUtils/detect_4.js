@@ -1,5 +1,5 @@
-import { cardRank } from './cards';
-import { getConsecutiveness } from './detectedCards';
+import { cardRank } from './cards.js';
+import { getConsecutiveness } from './detectedCards.js';
 
 export const detectCards_4 = (cards, suitMap, faceMap) => {
   // 4 of a kind
@@ -8,7 +8,7 @@ export const detectCards_4 = (cards, suitMap, faceMap) => {
       return {
         name: `Bomb! Four of a Kind; ${key}'s`,
         play: 'Bomb',
-        rank: 200 + cardRank[cards[0].id], // need to add 200 here to note they're higher than 3 consecutive pair bombs if the rank is ever compared.
+        rank: 300 + cardRank[cards[0].id], // need to add 200 here to note they're higher than 3 consecutive pair bombs if the rank is ever compared.
       };
     }
   }
