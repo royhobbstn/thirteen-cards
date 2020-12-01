@@ -43,6 +43,7 @@ io.on('connection', socket => {
     room.colors = {}; // {socketId: #hex },
     room.players = []; // array of socketIds
     /*** specific below ***/
+    room.rank = [null, null, null, null]; // 1,2,3,4th place
     room.seated = [null, null, null, null]; // corresponds to table position. value of null is empty, '--name' is an AI, 'kslfkjahsdf' is a socket.id
     room.cards = [null, null, null, null]; // corresponds to table position.  value of null is empty, (non-ordered... let it be uncontrolled on client)
     room.submitted = []; // [array of cards currently submitted] or [] empty array for 'pass'.
@@ -202,7 +203,59 @@ io.on('connection', socket => {
       return !submittedHand.includes(card);
     });
 
-    roomData[roomName].turnIndex = findNextPlayersTurn(roomData[roomName]);
+    // check for win condition
+    if (roomData[roomName].cards[seatIndex].length === 0) {
+      let lowestRank = 0;
+      for (let rank of roomData[roomName].rank) {
+        if (rank && rank > lowestRank) {
+          lowestRank = rank;
+        }
+      }
+      console.log('assign rank ' + lowestRank + 1);
+      roomData[roomName].rank[seatIndex] = lowestRank + 1;
+    }
+
+    // is there an orphaned player in the game with no opponent?
+    // assign them last place (or 2nd place in heads up, etc)
+    let orphanedSeatIndex;
+    let orphanedSeatCount = 0;
+    let highestRank = 0;
+
+    for (let [i, v] of roomData[roomName].seated.entries()) {
+      // this is something separate just so i can see what rank i may need to assign
+      if (roomData[roomName].rank[i] > highestRank) {
+        highestRank = roomData[roomName].rank[i];
+      }
+      // if seat is warm and has no cards and no rank
+      if (v && !roomData[roomName].cards[i].length && !roomData[roomName].rank[i]) {
+        orphanedSeatCount++;
+        orphanedSeatIndex = i;
+      }
+    }
+
+    if (orphanedSeatCount === 1) {
+      console.log('orphaned seat');
+      roomData[roomName].rank[orphanedSeatIndex] = highestRank + 1;
+    } else if (orphanedSeatCount > 1) {
+      console.error({ data: JSON.parse(JSON.stringify(roomData[roomName])) });
+      throw new Error('not expected, need to understand this');
+    }
+
+    // mark game as over if all warm seats have a rank
+    let remainingPlayers = 0;
+    for (let [i, v] of roomData[roomName].seated.entries()) {
+      console.log({ i, v, rank: roomData[roomName].rank[i] });
+      // if seat is warm and has no cards and no rank
+      if (v && !roomData[roomName].rank[i]) {
+        remainingPlayers++;
+      }
+    }
+    if (!remainingPlayers) {
+      console.log('no more remaining players');
+      roomData[roomName].stage === 'done';
+    } else {
+      roomData[roomName].turnIndex = findNextPlayersTurn(roomData[roomName]);
+    }
 
     sendToEveryone(io, roomName, roomData[roomName]);
   });
@@ -306,16 +359,20 @@ function findNextPlayersTurn(room) {
     if (seatIndex > 3) {
       seatIndex = seatIndex - 4;
     }
+    // if theres someone sitting here, it's a valid seat
     if (room.seated[seatIndex]) {
-      // if theres someone sitting here, it's a valid seat
-      // TODO what if this person already won and we're playing for 2nd, 3rd place?
+      // if this person already finished and has a rank, skip
+      if (room.rank[seatIndex]) {
+        continue;
+      }
+
       nextPlayer = seatIndex;
       break;
     }
   }
 
   if (nextPlayer === null) {
-    throw new Error('could not determine next player', JSON.stringify(roomData[roomName]));
+    throw new Error('could not determine next player', { data: JSON.parse(JSON.stringify(room)) });
   }
 
   return nextPlayer;
