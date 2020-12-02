@@ -43,6 +43,12 @@ export function CardSpace({ seatIndex, stage, cardObjects, sendMessage, gameData
     return gameData.initial && !scratchState.some(card => card.id === gameData.lowest);
   }
 
+  function isFreePlay() {
+    const lastPlay = getLastPlay();
+    console.log(lastPlay);
+    return lastPlay.play === 'Free Play';
+  }
+
   function getLastPlay() {
     let lastPlay = null;
 
@@ -160,19 +166,25 @@ export function CardSpace({ seatIndex, stage, cardObjects, sendMessage, gameData
             </ReactSortable>
           </div>
           <p>{JSON.stringify(detectedHand)}</p>
-          <Button
-            disabled={detectedHand.rank === 0 || !isYourTurn || missingLowCard() || restrictPlay()}
-            onClick={() => submitHand()}
-          >
-            Submit Hand
-          </Button>
-          <Button disabled={!isYourTurn} onClick={() => passTurn()}>
-            Pass
-          </Button>
-          {isYourTurn && missingLowCard() ? (
-            <p>
-              {`You must play the lowest card ( ${gameData.lowest} ) as part of your first hand.`}
-            </p>
+          {!gameData.rank[seatIndex] ? (
+            <div>
+              <Button
+                disabled={
+                  detectedHand.rank === 0 || !isYourTurn || missingLowCard() || restrictPlay()
+                }
+                onClick={() => submitHand()}
+              >
+                Submit Hand
+              </Button>
+              <Button disabled={!isYourTurn || isFreePlay()} onClick={() => passTurn()}>
+                Pass
+              </Button>
+              {isYourTurn && missingLowCard() ? (
+                <p>
+                  {`You must play the lowest card ( ${gameData.lowest} ) as part of your first hand.`}
+                </p>
+              ) : null}
+            </div>
           ) : null}
         </div>
       ) : null}

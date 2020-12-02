@@ -29,6 +29,11 @@ export function StatusBar({ gameData, seatedCount, socketRef, seatIndex, sendMes
           ) : null}
         </React.Fragment>
       ) : null}
+      {gameData.rank[seatIndex] ? (
+        <Menu.Item header>
+          <span style={{ color: 'blue' }}>{getRank(gameData.rank[seatIndex])}</span>
+        </Menu.Item>
+      ) : null}
       {gameData.stage === 'game' && seatIndex !== null ? (
         <React.Fragment>
           {seatIndex === gameData.turnIndex ? (
@@ -47,4 +52,20 @@ export function StatusBar({ gameData, seatedCount, socketRef, seatIndex, sendMes
       ) : null}
     </Menu>
   );
+}
+
+function getRank(rank) {
+  switch (rank) {
+    case 1:
+      return '1st place!!';
+    case 2:
+      return '2nd place';
+    case 3:
+      return '3rd place';
+    case 4:
+      return 'Last place';
+
+    default:
+      return 'Unexpected';
+  }
 }

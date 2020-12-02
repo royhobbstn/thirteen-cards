@@ -226,19 +226,15 @@ io.on('connection', socket => {
       if (roomData[roomName].rank[i] > highestRank) {
         highestRank = roomData[roomName].rank[i];
       }
-      // if seat is warm and has no cards and no rank
-      if (v && !roomData[roomName].cards[i].length && !roomData[roomName].rank[i]) {
+      // if seat is warm and has no rank
+      if (v && !roomData[roomName].rank[i]) {
         orphanedSeatCount++;
         orphanedSeatIndex = i;
       }
     }
-
     if (orphanedSeatCount === 1) {
       console.log('orphaned seat');
       roomData[roomName].rank[orphanedSeatIndex] = highestRank + 1;
-    } else if (orphanedSeatCount > 1) {
-      console.error({ data: JSON.parse(JSON.stringify(roomData[roomName])) });
-      throw new Error('not expected, need to understand this');
     }
 
     // mark game as over if all warm seats have a rank
@@ -252,7 +248,27 @@ io.on('connection', socket => {
     }
     if (!remainingPlayers) {
       console.log('no more remaining players');
-      roomData[roomName].stage === 'done';
+      if (roomData[roomName].stage === 'game') {
+        console.log('setting to done');
+        roomData[roomName].stage = 'done';
+        setTimeout(() => {
+          // reset
+
+          console.log('resetting');
+          roomData[roomName].stats = {};
+          roomData[roomName].stage = 'seating';
+          roomData[roomName].rank = [null, null, null, null];
+          roomData[roomName].cards = [null, null, null, null];
+          roomData[roomName].submitted = [];
+          roomData[roomName].last = [null, null, null, null];
+          roomData[roomName].initial = true;
+          roomData[roomName].lowest = null;
+          roomData[roomName].turnIndex = 0;
+          roomData[roomName].board = [];
+          console.log('sending');
+          sendToEveryone(io, roomName, roomData[roomName]);
+        }, 5000);
+      }
     } else {
       roomData[roomName].turnIndex = findNextPlayersTurn(roomData[roomName]);
     }
