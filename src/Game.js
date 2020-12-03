@@ -4,7 +4,7 @@ import { StatusBar } from './StatusBar';
 import { CardSpace } from './CardSpace';
 import { Board } from './Board';
 
-export function Game({ socketRef }) {
+export function Game({ socketRef, windowDimensions }) {
   const { gameData, sendMessage } = useGame(socketRef);
 
   if (!gameData) {
@@ -34,15 +34,20 @@ export function Game({ socketRef }) {
 
   return (
     <div>
-      <StatusBar
+      {/* <StatusBar
         gameData={gameData}
         seatedCount={seatedCount}
         socketRef={socketRef}
         sendMessage={sendMessage}
         seatIndex={seatIndex}
-      />
+      /> */}
 
-      <Board gameData={gameData} sendMessage={sendMessage} socketRef={socketRef} />
+      <Board
+        gameData={gameData}
+        sendMessage={sendMessage}
+        socketRef={socketRef}
+        windowDimensions={windowDimensions}
+      />
 
       <CardSpace
         gameData={gameData}

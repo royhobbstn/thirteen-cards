@@ -6,6 +6,8 @@ export function StatusBar({ gameData, seatedCount, socketRef, seatIndex, sendMes
     return seat === socketRef.current.id;
   });
 
+  return null;
+
   console.log(gameData);
 
   return (

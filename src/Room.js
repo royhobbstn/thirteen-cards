@@ -4,7 +4,7 @@ import { Game } from './Game';
 import { Chat } from './Chat';
 import socketIOClient from 'socket.io-client';
 
-const Room = ({ match, roomNameLabel, updateRoomNameLabel, socketRef }) => {
+const Room = ({ match, roomNameLabel, updateRoomNameLabel, socketRef, windowDimensions }) => {
   const [socketReady, updateSocketReady] = React.useState(false);
   const roomName = match.params.roomId;
 
@@ -35,20 +35,27 @@ const Room = ({ match, roomNameLabel, updateRoomNameLabel, socketRef }) => {
     }
   }, [roomName, roomNameLabel, updateRoomNameLabel]);
 
-  return (
-    <Grid>
-      {socketReady ? (
-        <Grid.Row>
-          <Grid.Column width={10}>
-            <Game socketRef={socketRef} />
-          </Grid.Column>
-          <Grid.Column width={6}>
+  return socketReady ? (
+    windowDimensions.width > 1260 ? (
+      <Grid>
+        <Grid.Column width={10}>
+          <Game socketRef={socketRef} windowDimensions={windowDimensions} />
+        </Grid.Column>
+        <Grid.Column width={6}>
+          <Chat socketRef={socketRef} />
+        </Grid.Column>
+      </Grid>
+    ) : (
+      <React.Fragment>
+        <Grid>
+          <Grid.Column width={16}>
+            <Game socketRef={socketRef} windowDimensions={windowDimensions} />
             <Chat socketRef={socketRef} />
           </Grid.Column>
-        </Grid.Row>
-      ) : null}
-    </Grid>
-  );
+        </Grid>
+      </React.Fragment>
+    )
+  ) : null;
 };
 
 export default Room;
