@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Grid } from 'semantic-ui-react';
 import { Game } from './Game';
-import { Chat } from './Chat';
 import socketIOClient from 'socket.io-client';
+import TabContainer from './TabContainer';
 
 const Room = ({ match, roomNameLabel, updateRoomNameLabel, socketRef, windowDimensions }) => {
   const [socketReady, updateSocketReady] = React.useState(false);
@@ -36,25 +36,14 @@ const Room = ({ match, roomNameLabel, updateRoomNameLabel, socketRef, windowDime
   }, [roomName, roomNameLabel, updateRoomNameLabel]);
 
   return socketReady ? (
-    windowDimensions.width > 1260 ? (
-      <Grid>
-        <Grid.Column width={10}>
-          <Game socketRef={socketRef} windowDimensions={windowDimensions} />
-        </Grid.Column>
-        <Grid.Column width={6}>
-          <Chat socketRef={socketRef} />
-        </Grid.Column>
-      </Grid>
-    ) : (
-      <React.Fragment>
-        <Grid>
-          <Grid.Column width={16}>
-            <Game socketRef={socketRef} windowDimensions={windowDimensions} />
-            <Chat socketRef={socketRef} />
-          </Grid.Column>
-        </Grid>
-      </React.Fragment>
-    )
+    <Grid>
+      <Grid.Column width={10}>
+        <Game socketRef={socketRef} windowDimensions={windowDimensions} />
+      </Grid.Column>
+      <Grid.Column width={6}>
+        <TabContainer socketRef={socketRef} />
+      </Grid.Column>
+    </Grid>
   ) : null;
 };
 
