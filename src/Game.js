@@ -36,6 +36,7 @@ export function Game({ socketRef, windowDimensions, gameData, sendMessage }) {
         stage={gameData.stage}
         cardObjects={cardObjects}
         sendMessage={sendMessage}
+        windowDimensions={windowDimensions}
       />
     </div>
   );

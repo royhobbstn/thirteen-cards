@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { Button, Icon } from 'semantic-ui-react';
 import BackgroundImg from './images/table-bg.jpg';
+import { SeatingStageBoard } from './SeatingStageBoard';
+import { GameStageBoard } from './GameStageBoard';
 
 export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
   let boardHeight = windowDimensions.height - 200 - 50;
@@ -37,7 +38,7 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
         style={{
           position: 'relative',
           height: '100%',
-          margin: '10px 0 10px 10px',
+          margin: '0 0 10px 10px',
           borderRadius: '15px',
           backgroundImage: `url(${BackgroundImg})`,
         }}
@@ -72,33 +73,23 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
                 right: seatPositions[seatIndex].right,
               }}
             >
+              {gameData.stage === 'seating' || gameData.stage === 'done' ? (
+                <SeatingStageBoard
+                  seatIndex={seatIndex}
+                  gameData={gameData}
+                  sendMessage={sendMessage}
+                  socketRef={socketRef}
+                />
+              ) : null}
+              {gameData.stage === 'game' ? (
+                <GameStageBoard
+                  seatIndex={seatIndex}
+                  gameData={gameData}
+                  sendMessage={sendMessage}
+                  socketRef={socketRef}
+                />
+              ) : null}
               {/* <p>{gameData.cards[seatIndex] ? gameData.cards[seatIndex].length : '---'}</p> */}
-              {gameData.seated[seatIndex] === null && gameData.stage === 'seating' ? (
-                <Button animated="fade" onClick={() => sendMessage('chooseSeat', seatIndex)}>
-                  <Button.Content hidden>Sit</Button.Content>
-                  <Button.Content visible>
-                    <Icon name="user outline" size="big" color="grey" />
-                  </Button.Content>
-                </Button>
-              ) : null}
-              {gameData.seated[seatIndex] !== null &&
-              gameData.stage === 'seating' &&
-              gameData.seated[seatIndex] !== socketRef.current.id ? (
-                <Button disabled>
-                  <Button.Content>
-                    <Icon name="user" size="big" color="black" />
-                  </Button.Content>
-                </Button>
-              ) : null}
-              {gameData.seated[seatIndex] === socketRef.current.id &&
-              gameData.stage === 'seating' ? (
-                <Button animated="fade" onClick={() => sendMessage('chooseSeat', seatIndex)}>
-                  <Button.Content hidden>Stand Up</Button.Content>
-                  <Button.Content visible>
-                    <Icon name="user" size="big" color="green" />
-                  </Button.Content>
-                </Button>
-              ) : null}
               {/* <p>{gameData.aliases[gameData.seated[seatIndex]]}</p> */}
             </div>
           );

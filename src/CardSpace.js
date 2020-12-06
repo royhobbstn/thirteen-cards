@@ -3,12 +3,35 @@ import { ReactSortable } from 'react-sortablejs';
 import { Button } from 'semantic-ui-react';
 import { getDetectedCards } from './cardUtils/detectedCards';
 
-export function CardSpace({ seatIndex, stage, cardObjects, sendMessage, gameData }) {
+export function CardSpace({
+  seatIndex,
+  stage,
+  cardObjects,
+  sendMessage,
+  gameData,
+  windowDimensions,
+}) {
   const [listState, updateListState] = React.useState(cardObjects);
   const [scratchState, updateScratchState] = React.useState([]);
 
   if (seatIndex == null) {
     return null;
+  }
+
+  // pane for table about 62.5% of total width
+  const boardWidth = windowDimensions.width * 0.62;
+  const numberOfCards = listState.length;
+  const stagedNumberOfCards = scratchState.length;
+
+  let cardWidth = (boardWidth - 148) / numberOfCards + 1;
+  if (cardWidth > 64) {
+    cardWidth = 64;
+  }
+
+  // extra space for submit / pass buttons
+  let stagedCardWidth = (boardWidth - 208) / stagedNumberOfCards + 1;
+  if (stagedCardWidth > 64) {
+    stagedCardWidth = 64;
   }
 
   const detectedHand = getDetectedCards(scratchState);
@@ -112,24 +135,41 @@ export function CardSpace({ seatIndex, stage, cardObjects, sendMessage, gameData
       {seatIndex !== null && stage !== 'seating' ? (
         <div>
           <div style={{ height: '100px', width: '780px', marginLeft: '10px', marginTop: '10px' }}>
-            <ReactSortable list={listState} setList={updateListState}>
+            <ReactSortable
+              group={{ name: 'mainlist', put: true, pull: ['scratchlist'] }}
+              list={listState}
+              setList={updateListState}
+              onAdd={(a, b, c) => {
+                console.log('onAdd');
+                console.log({ a, b, c });
+                console.log({ oldIndex: a.oldIndex });
+                console.log({ newIndex: a.newIndex });
+                const moveCard = scratchState[a.oldIndex];
+                console.log(moveCard);
+                updateListState([...listState]);
+                updateScratchState([...scratchState]);
+              }}
+            >
               {listState.map(card => {
                 return (
                   <div
                     onDoubleClick={() => addCardToScratch(card.id)}
                     key={card.id}
-                    className="box-shadow"
                     style={{
-                      width: '56px',
-                      height: '56px',
+                      width: cardWidth + 'px',
+                      height: 'auto',
                       display: 'inline-block',
                       margin: '2px',
                     }}
                   >
                     <img
-                      key={card.id}
                       className="box-shadow"
-                      style={{ width: '56px', height: 'auto', display: 'inline-block' }}
+                      key={card.id}
+                      style={{
+                        width: '64px',
+                        height: 'auto',
+                        display: 'inline-block',
+                      }}
                       alt={card.id}
                       src={`cards/${card.id}.svg`}
                     />
@@ -139,24 +179,42 @@ export function CardSpace({ seatIndex, stage, cardObjects, sendMessage, gameData
             </ReactSortable>
           </div>
           <div style={{ height: '100px', width: '780px', marginLeft: '10px', marginTop: '10px' }}>
-            <ReactSortable list={scratchState} setList={updateScratchState} animation="150">
+            <ReactSortable
+              group={{ name: 'scratchlist', put: true, pull: ['mainlist'] }}
+              list={scratchState}
+              setList={updateScratchState}
+              animation="150"
+              onAdd={(a, b, c) => {
+                console.log('onAdd');
+                console.log({ a, b, c });
+                console.log({ oldIndex: a.oldIndex });
+                console.log({ newIndex: a.newIndex });
+                const moveCard = listState[a.oldIndex];
+                console.log(moveCard);
+                updateListState([...listState]);
+                updateScratchState([...scratchState]);
+              }}
+            >
               {scratchState.map(card => {
                 return (
                   <div
                     onDoubleClick={() => returnCardToMain(card.id)}
                     key={card.id}
-                    className="box-shadow"
                     style={{
-                      width: '56px',
-                      height: '56px',
+                      width: stagedCardWidth + 'px',
+                      height: 'auto',
                       display: 'inline-block',
                       margin: '2px',
                     }}
                   >
                     <img
-                      key={card.id}
                       className="box-shadow"
-                      style={{ width: '56px', height: 'auto', display: 'inline-block' }}
+                      key={card.id}
+                      style={{
+                        width: '64px',
+                        height: 'auto',
+                        display: 'inline-block',
+                      }}
                       alt={card.id}
                       src={`cards/${card.id}.svg`}
                     />
@@ -174,7 +232,7 @@ export function CardSpace({ seatIndex, stage, cardObjects, sendMessage, gameData
                 }
                 onClick={() => submitHand()}
               >
-                Submit Hand
+                Play
               </Button>
               <Button disabled={!isYourTurn || isFreePlay()} onClick={() => passTurn()}>
                 Pass
