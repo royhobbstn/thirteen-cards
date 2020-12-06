@@ -1,22 +1,11 @@
 import * as React from 'react';
-import useGame from './useGame';
-import { StatusBar } from './StatusBar';
 import { CardSpace } from './CardSpace';
 import { Board } from './Board';
 
-export function Game({ socketRef, windowDimensions }) {
-  const { gameData, sendMessage } = useGame(socketRef);
-
+export function Game({ socketRef, windowDimensions, gameData, sendMessage }) {
   if (!gameData) {
     return null;
   }
-
-  const seatedCount = gameData.seated.reduce((acc, current) => {
-    if (current !== null) {
-      acc++;
-    }
-    return acc;
-  }, 0);
 
   const seatIndex = getSeatIndex();
 
@@ -34,14 +23,6 @@ export function Game({ socketRef, windowDimensions }) {
 
   return (
     <div>
-      {/* <StatusBar
-        gameData={gameData}
-        seatedCount={seatedCount}
-        socketRef={socketRef}
-        sendMessage={sendMessage}
-        seatIndex={seatIndex}
-      /> */}
-
       <Board
         gameData={gameData}
         sendMessage={sendMessage}

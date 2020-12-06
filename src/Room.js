@@ -4,7 +4,15 @@ import { Game } from './Game';
 import socketIOClient from 'socket.io-client';
 import TabContainer from './TabContainer';
 
-const Room = ({ match, roomNameLabel, updateRoomNameLabel, socketRef, windowDimensions }) => {
+const Room = ({
+  match,
+  roomNameLabel,
+  updateRoomNameLabel,
+  socketRef,
+  windowDimensions,
+  gameData,
+  sendMessage,
+}) => {
   const [socketReady, updateSocketReady] = React.useState(false);
   const roomName = match.params.roomId;
 
@@ -38,10 +46,15 @@ const Room = ({ match, roomNameLabel, updateRoomNameLabel, socketRef, windowDime
   return socketReady ? (
     <Grid>
       <Grid.Column width={10}>
-        <Game socketRef={socketRef} windowDimensions={windowDimensions} />
+        <Game
+          socketRef={socketRef}
+          windowDimensions={windowDimensions}
+          gameData={gameData}
+          sendMessage={sendMessage}
+        />
       </Grid.Column>
       <Grid.Column width={6}>
-        <TabContainer socketRef={socketRef} />
+        <TabContainer socketRef={socketRef} gameData={gameData} />
       </Grid.Column>
     </Grid>
   ) : null;

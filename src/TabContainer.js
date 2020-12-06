@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Tab } from 'semantic-ui-react';
 import { Chat } from './Chat';
 
-const TabContainer = ({ socketRef }) => {
+const TabContainer = ({ socketRef, gameData }) => {
   const panes = [
     {
       menuItem: 'Chat',

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import Home from './Home';
 import Room from './Room';
 import MainMenu from './MainMenu';
+import useGame from './useGame';
 
 function getWindowDimensions() {
   const { innerWidth: width, innerHeight: height } = window;
@@ -16,6 +17,7 @@ function App() {
   const socketRef = React.useRef(null);
   const [roomNameLabel, updateRoomNameLabel] = React.useState('');
   const [windowDimensions, setWindowDimensions] = React.useState(getWindowDimensions());
+  const { gameData, sendMessage } = useGame(socketRef);
 
   React.useEffect(() => {
     function handleResize() {
@@ -28,7 +30,12 @@ function App() {
 
   return (
     <React.Fragment>
-      <MainMenu roomNameLabel={roomNameLabel} socketRef={socketRef} />
+      <MainMenu
+        roomNameLabel={roomNameLabel}
+        socketRef={socketRef}
+        gameData={gameData}
+        sendMessage={sendMessage}
+      />
       <Router>
         <Switch>
           <Route exact path="/" render={() => <Home />} />
@@ -42,6 +49,8 @@ function App() {
                 updateRoomNameLabel={updateRoomNameLabel}
                 socketRef={socketRef}
                 windowDimensions={windowDimensions}
+                gameData={gameData}
+                sendMessage={sendMessage}
               />
             )}
           />

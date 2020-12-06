@@ -2,8 +2,9 @@ import * as React from 'react';
 import Settings from './Settings';
 import { AboutModal } from './AboutModal';
 import { Menu, Button, Icon, Header } from 'semantic-ui-react';
+import { StatusBar } from './StatusBar';
 
-const MainMenu = ({ roomNameLabel, socketRef }) => {
+const MainMenu = ({ roomNameLabel, socketRef, gameData, sendMessage }) => {
   const [aboutModalOpen, updateAboutModalOpen] = React.useState(false);
   const [settingsAreVisible, updateSettingsAreVisible] = React.useState(false);
 
@@ -33,6 +34,9 @@ const MainMenu = ({ roomNameLabel, socketRef }) => {
             <span style={{ color: 'gray' }}>{roomNameLabel}</span>
           </Menu.Item>
         ) : null}
+
+        <StatusBar gameData={gameData} socketRef={socketRef} sendMessage={sendMessage} />
+
         <Menu.Item position="right">
           <Button style={{ marginRight: '10px' }} icon onClick={() => updateAboutModalOpen(true)}>
             <Icon name="question circle outline" />
