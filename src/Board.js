@@ -14,9 +14,24 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
 
   const iconWidth = 78;
   const iconHeight = 50;
+  const cardHeight = 90;
+  const rawCardWidth = 64;
+  const margins = 50;
+
+  const potentialCardArea = boardWidth - 2 * iconWidth - margins - rawCardWidth;
+
+  let cardWidth = rawCardWidth;
+  const numberBoardCards = gameData.board.length;
+  if (numberBoardCards * cardWidth > potentialCardArea) {
+    cardWidth = potentialCardArea / numberBoardCards;
+  }
+
+  const cardArea = cardWidth * numberBoardCards + (rawCardWidth - cardWidth);
 
   const leftPos = boardWidth / 2 - iconWidth / 2;
+  const cardLeft = boardWidth / 2 - cardArea / 2;
   const topPos = boardHeight / 2 - iconHeight / 2;
+  const cardPos = boardHeight / 2 - cardHeight / 2;
 
   const seatPositions = [
     { top: '10px', left: leftPos + 'px', bottom: '', right: '' },
@@ -45,20 +60,31 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
       >
         {gameData.board.map((card, index) => {
           return (
-            <img
+            <div
               key={card}
               style={{
-                position: 'absolute',
-                width: '56px',
+                width: '64px',
                 height: 'auto',
-                top: '100px',
-                left: 120 + 30 * index + 'px',
+                margin: '2px',
+                position: 'absolute',
+                top: cardPos + 'px',
+                left: cardLeft + cardWidth * index + 'px',
                 display: 'inline-block',
               }}
-              className="box-shadow"
-              alt={card}
-              src={`cards/${card}.svg`}
-            />
+            >
+              <img
+                className="box-shadow"
+                key={card}
+                style={{
+                  width: '64px',
+                  height: 'auto',
+                  display: 'inline-block',
+                }}
+                className="box-shadow"
+                alt={card}
+                src={`cards/${card}.svg`}
+              />
+            </div>
           );
         })}
         {[0, 1, 2, 3].map(seatIndex => {
