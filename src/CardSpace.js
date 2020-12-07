@@ -3,6 +3,8 @@ import { ReactSortable } from 'react-sortablejs';
 import { Button } from 'semantic-ui-react';
 import { getDetectedCards } from './cardUtils/detectedCards';
 
+let lastGameId = 0;
+
 export function CardSpace({
   seatIndex,
   stage,
@@ -39,23 +41,27 @@ export function CardSpace({
   const isYourTurn = seatIndex === gameData.turnIndex;
 
   // if mismatch between listState and original
-  if (cardObjects.length !== listState.length + scratchState.length) {
+  if (gameData.gameId !== lastGameId) {
+    console.log('HARD RESET');
     updateListState(cardObjects);
-    updateScratchState([]);
+    lastGameId = gameData.gameId;
   }
 
   function addCardToScratch(card) {
+    console.log('addCardToScratch');
     updateScratchState([...scratchState, { id: card, name: card }]);
     updateListState([...listState.filter(d => d.id !== card)]);
   }
 
   function returnCardToMain(card) {
+    console.log('returnCardToMain');
     updateListState([...listState, { id: card, name: card }]);
     updateScratchState([...scratchState.filter(d => d.id !== card)]);
   }
 
   function submitHand() {
     sendMessage('submitHand', scratchState);
+    updateScratchState([]);
   }
 
   function passTurn() {
@@ -139,16 +145,7 @@ export function CardSpace({
               group={{ name: 'mainlist', put: true, pull: ['scratchlist'] }}
               list={listState}
               setList={updateListState}
-              onAdd={(a, b, c) => {
-                console.log('onAdd');
-                console.log({ a, b, c });
-                console.log({ oldIndex: a.oldIndex });
-                console.log({ newIndex: a.newIndex });
-                const moveCard = scratchState[a.oldIndex];
-                console.log(moveCard);
-                updateListState([...listState]);
-                updateScratchState([...scratchState]);
-              }}
+              style={{ width: '100%' }}
             >
               {listState.map(card => {
                 return (
@@ -184,16 +181,7 @@ export function CardSpace({
               list={scratchState}
               setList={updateScratchState}
               animation="150"
-              onAdd={(a, b, c) => {
-                console.log('onAdd');
-                console.log({ a, b, c });
-                console.log({ oldIndex: a.oldIndex });
-                console.log({ newIndex: a.newIndex });
-                const moveCard = listState[a.oldIndex];
-                console.log(moveCard);
-                updateListState([...listState]);
-                updateScratchState([...scratchState]);
-              }}
+              style={{ width: '100%' }}
             >
               {scratchState.map(card => {
                 return (

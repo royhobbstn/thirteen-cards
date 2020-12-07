@@ -6,6 +6,7 @@ import Deck from 'card-deck';
 import { orderedCards, cardRank } from '../cardUtils/cards.js';
 import { getDetectedCards } from '../cardUtils/detectedCards.js';
 import { fileURLToPath } from 'url';
+import { v4 as uuid } from 'uuid';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -131,6 +132,7 @@ io.on('connection', socket => {
     roomData[roomName].lastModified = Date.now();
 
     if (updatedStatus === 'game') {
+      roomData[roomName].gameId = uuid();
       // deal cards
       const myDeck = new Deck(orderedCards);
       myDeck.shuffle();
@@ -265,6 +267,7 @@ io.on('connection', socket => {
           roomData[roomName].lowest = null;
           roomData[roomName].turnIndex = 0;
           roomData[roomName].board = [];
+          roomData[roomName].gameId = 0;
           console.log('sending');
           sendToEveryone(io, roomName, roomData[roomName]);
         }, 5000);
