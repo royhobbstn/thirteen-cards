@@ -13,8 +13,9 @@ export function GameStageBoard({ gameData, sendMessage, socketRef, seatIndex }) 
       ) : null}
       {gameData.seated[seatIndex] !== null &&
       gameData.seated[seatIndex] !== socketRef.current.id ? (
-        <Button disabled>
-          <Button.Content>
+        <Button animated="fade">
+          <Button.Content hidden>{gameData.cards[seatIndex].length}</Button.Content>
+          <Button.Content visible>
             <Icon name="user" size="big" color="black" />
           </Button.Content>
         </Button>

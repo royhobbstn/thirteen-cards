@@ -21,17 +21,19 @@ export function CardSpace({
   }
 
   // pane for table about 62.5% of total width
-  const boardWidth = windowDimensions.width * 0.62;
+  const boardWidth = windowDimensions.width * 0.62 - 10;
   const numberOfCards = listState.length;
   const stagedNumberOfCards = scratchState.length;
 
-  let cardWidth = (boardWidth - 148) / numberOfCards + 1;
+  const cardAreaWidth = boardWidth - 148;
+  let cardWidth = cardAreaWidth / (numberOfCards + 1);
   if (cardWidth > 64) {
     cardWidth = 64;
   }
 
   // extra space for submit / pass buttons
-  let stagedCardWidth = (boardWidth - 208) / stagedNumberOfCards + 1;
+  const useableBoardWidth = boardWidth - 208;
+  let stagedCardWidth = useableBoardWidth / (stagedNumberOfCards + 1);
   if (stagedCardWidth > 64) {
     stagedCardWidth = 64;
   }
@@ -140,12 +142,20 @@ export function CardSpace({
     <div>
       {seatIndex !== null && stage !== 'seating' ? (
         <div>
-          <div style={{ height: '100px', width: '780px', marginLeft: '10px', marginTop: '10px' }}>
+          <div
+            style={{
+              height: '100px',
+              width: boardWidth + 'px',
+              marginLeft: '10px',
+              marginTop: '10px',
+            }}
+          >
             <ReactSortable
+              className="dropzone"
               group={{ name: 'mainlist', put: true, pull: ['scratchlist'] }}
               list={listState}
               setList={updateListState}
-              style={{ width: '100%' }}
+              style={{ width: '100%', height: '100%' }}
             >
               {listState.map(card => {
                 return (
@@ -175,13 +185,28 @@ export function CardSpace({
               })}
             </ReactSortable>
           </div>
-          <div style={{ height: '100px', width: '780px', marginLeft: '10px', marginTop: '10px' }}>
+          <div
+            style={{
+              height: '100px',
+              width: boardWidth + 'px',
+              marginLeft: '10px',
+              marginTop: '10px',
+              position: 'relative',
+            }}
+          >
             <ReactSortable
+              className="dropzone"
               group={{ name: 'scratchlist', put: true, pull: ['mainlist'] }}
               list={scratchState}
               setList={updateScratchState}
               animation="150"
-              style={{ width: '100%' }}
+              style={{
+                width: '100%',
+                height: '100px',
+                position: 'absolute',
+                top: '0',
+                left: '0',
+              }}
             >
               {scratchState.map(card => {
                 return (
@@ -210,28 +235,33 @@ export function CardSpace({
                 );
               })}
             </ReactSortable>
+            <Button
+              style={{ position: 'absolute', top: '5px', right: '5px', width: '100px' }}
+              disabled={
+                detectedHand.rank === 0 || !isYourTurn || missingLowCard() || restrictPlay()
+              }
+              onClick={() => submitHand()}
+            >
+              Play
+            </Button>
+            <Button
+              style={{ position: 'absolute', bottom: '5px', right: '5px', width: '100px' }}
+              disabled={!isYourTurn || isFreePlay()}
+              onClick={() => passTurn()}
+            >
+              Pass
+            </Button>
           </div>
-          <p>{JSON.stringify(detectedHand)}</p>
+          {/* <p>{JSON.stringify(detectedHand)}</p>
           {!gameData.rank[seatIndex] ? (
             <div>
-              <Button
-                disabled={
-                  detectedHand.rank === 0 || !isYourTurn || missingLowCard() || restrictPlay()
-                }
-                onClick={() => submitHand()}
-              >
-                Play
-              </Button>
-              <Button disabled={!isYourTurn || isFreePlay()} onClick={() => passTurn()}>
-                Pass
-              </Button>
               {isYourTurn && missingLowCard() ? (
                 <p>
                   {`You must play the lowest card ( ${gameData.lowest} ) as part of your first hand.`}
                 </p>
               ) : null}
             </div>
-          ) : null}
+          ) : null} */}
         </div>
       ) : null}
     </div>

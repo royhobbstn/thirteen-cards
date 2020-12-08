@@ -40,6 +40,26 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
     { top: topPos + 'px', left: '10px', bottom: '', right: '' },
   ];
 
+  const leftName = boardWidth / 2 - iconWidth / 2 + 5;
+  const topName = boardHeight / 2 - iconHeight;
+  const bottomName = 15 + iconHeight;
+  const rightMarginName = 20;
+  const leftMarginName = 15;
+  const topMarginName = 15 + iconHeight;
+
+  const namePositions = [
+    { top: topMarginName + 'px', left: leftName + 'px', bottom: '', right: '', textAlign: 'left' },
+    {
+      top: topName + 'px',
+      left: '',
+      bottom: '',
+      right: rightMarginName + 'px',
+      textAlign: 'right',
+    },
+    { top: '', left: leftName + 'px', bottom: bottomName + 'px', right: '', textAlign: 'left' },
+    { top: topName + 'px', left: leftMarginName + 'px', bottom: '', right: '', textAlign: 'left' },
+  ];
+
   return (
     <div
       style={{
@@ -80,7 +100,6 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
                   height: 'auto',
                   display: 'inline-block',
                 }}
-                className="box-shadow"
                 alt={card}
                 src={`cards/${card}.svg`}
               />
@@ -116,7 +135,26 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
                 />
               ) : null}
               {/* <p>{gameData.cards[seatIndex] ? gameData.cards[seatIndex].length : '---'}</p> */}
-              {/* <p>{gameData.aliases[gameData.seated[seatIndex]]}</p> */}
+            </div>
+          );
+        })}
+        {[0, 1, 2, 3].map(seatIndex => {
+          return (
+            <div
+              key={seatIndex}
+              style={{
+                position: 'absolute',
+                top: namePositions[seatIndex].top,
+                left: namePositions[seatIndex].left,
+                bottom: namePositions[seatIndex].bottom,
+                right: namePositions[seatIndex].right,
+              }}
+            >
+              {gameData.seated[seatIndex] ? (
+                <p className="textstroke" style={{ textAlign: namePositions[seatIndex].textAlign }}>
+                  {gameData.aliases[gameData.seated[seatIndex]]}
+                </p>
+              ) : null}
             </div>
           );
         })}
