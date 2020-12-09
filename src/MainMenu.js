@@ -3,6 +3,7 @@ import Settings from './Settings';
 import { AboutModal } from './AboutModal';
 import { Menu, Button, Icon, Header } from 'semantic-ui-react';
 import { StatusBar } from './StatusBar';
+import { getSeatIndex } from './util.js';
 
 const MainMenu = ({ roomNameLabel, socketRef, gameData, sendMessage }) => {
   const [aboutModalOpen, updateAboutModalOpen] = React.useState(false);
@@ -15,6 +16,18 @@ const MainMenu = ({ roomNameLabel, socketRef, gameData, sendMessage }) => {
       updateSettingsAreVisible(true);
     }
   }, [settingsAreVisible, updateSettingsAreVisible]);
+
+  let seatedCount = 0;
+  let seatIndex = null;
+  if (gameData) {
+    seatedCount = gameData.seated.reduce((acc, current) => {
+      if (current !== null) {
+        acc++;
+      }
+      return acc;
+    }, 0);
+    seatIndex = getSeatIndex(gameData, socketRef);
+  }
 
   return (
     <React.Fragment>
@@ -35,9 +48,27 @@ const MainMenu = ({ roomNameLabel, socketRef, gameData, sendMessage }) => {
           </Menu.Item>
         ) : null}
 
-        <StatusBar gameData={gameData} socketRef={socketRef} sendMessage={sendMessage} />
+        <StatusBar
+          gameData={gameData}
+          socketRef={socketRef}
+          sendMessage={sendMessage}
+          seatIndex={seatIndex}
+        />
 
         <Menu.Item position="right">
+          {gameData && gameData.stage === 'seating' && seatedCount >= 2 ? (
+            <Button
+              style={{ marginRight: '10px' }}
+              onClick={() => sendMessage('setGameStatus', 'game')}
+            >
+              Start Game
+            </Button>
+          ) : null}
+          {gameData && gameData.stage === 'game' && seatIndex !== null ? (
+            <Button style={{ marginRight: '10px' }} onClick={() => sendMessage('leaveGame', null)}>
+              Forfeit
+            </Button>
+          ) : null}
           <Button style={{ marginRight: '10px' }} icon onClick={() => updateAboutModalOpen(true)}>
             <Icon name="question circle outline" />
           </Button>

@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { Menu, Button } from 'semantic-ui-react';
+import { getLastPlay } from './util.js';
 
-export function StatusBar({ gameData, socketRef, sendMessage }) {
+export function StatusBar({ gameData, socketRef, sendMessage, seatIndex }) {
   if (!gameData) {
     return null;
   }
@@ -10,26 +11,11 @@ export function StatusBar({ gameData, socketRef, sendMessage }) {
     return seat === socketRef.current.id;
   });
 
-  const seatIndex = getSeatIndex();
-
-  function getSeatIndex() {
-    let seatIndex = null;
-    for (let i = 0; i < gameData.seated.length; i++) {
-      if (gameData.seated[i] === socketRef.current.id) {
-        seatIndex = i;
-      }
-    }
-    return seatIndex;
-  }
-
-  const seatedCount = gameData.seated.reduce((acc, current) => {
-    if (current !== null) {
-      acc++;
-    }
-    return acc;
-  }, 0);
-
   console.log(gameData);
+
+  const lastPlay = getLastPlay(gameData, seatIndex);
+
+  console.log({ lastPlay });
 
   return (
     <React.Fragment>
@@ -42,15 +28,8 @@ export function StatusBar({ gameData, socketRef, sendMessage }) {
           </Menu.Item>
         </React.Fragment>
       ) : null}
-      {gameData.stage === 'seating' ? (
-        <React.Fragment>
-          {!isSeated ? <Menu.Item header>Pick a Seat...</Menu.Item> : null}
-          {seatedCount >= 2 ? (
-            <Menu.Item position="right">
-              <Button onClick={() => sendMessage('setGameStatus', 'game')}>Start Game</Button>
-            </Menu.Item>
-          ) : null}
-        </React.Fragment>
+      {gameData.stage === 'seating' && !isSeated ? (
+        <Menu.Item header>Pick a Seat...</Menu.Item>
       ) : null}
       {gameData.rank[seatIndex] ? (
         <Menu.Item header>
@@ -58,20 +37,26 @@ export function StatusBar({ gameData, socketRef, sendMessage }) {
         </Menu.Item>
       ) : null}
       {gameData.stage === 'game' && seatIndex !== null ? (
-        <React.Fragment>
-          {seatIndex === gameData.turnIndex ? (
-            <Menu.Item header>
-              <span style={{ color: 'green' }}>Your Turn!</span> Playing ..todo..
-            </Menu.Item>
-          ) : (
-            <Menu.Item header>
-              {gameData.aliases[gameData.seated[gameData.turnIndex]]} playing ..todo..
-            </Menu.Item>
-          )}
-          <Menu.Item position="right">
-            <Button onClick={() => sendMessage('leaveGame', null)}>Leave</Button>
+        seatIndex === gameData.turnIndex ? (
+          <Menu.Item header>
+            <span style={{ color: 'green' }}>Your Turn!</span>&nbsp;{' '}
+            {lastPlay.play === 'Free Play' ? (
+              <span style={{ color: 'black', fontWeight: 'bold' }}>{lastPlay.play}</span>
+            ) : (
+              <span style={{ fontWeight: '1', color: 'grey' }}>
+                Board Is:{' '}
+                <span style={{ color: 'black', fontWeight: 'bold' }}>{lastPlay.name}</span>
+              </span>
+            )}
           </Menu.Item>
-        </React.Fragment>
+        ) : (
+          <Menu.Item header>
+            <span style={{ color: 'red' }}>
+              {gameData.aliases[gameData.seated[gameData.turnIndex]]}
+            </span>{' '}
+            &nbsp;playing ...
+          </Menu.Item>
+        )
       ) : null}
     </React.Fragment>
   );

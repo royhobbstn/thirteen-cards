@@ -2,6 +2,7 @@ import * as React from 'react';
 import { ReactSortable } from 'react-sortablejs';
 import { Button } from 'semantic-ui-react';
 import { getDetectedCards } from './cardUtils/detectedCards';
+import { restrictPlay, missingLowCard, isFreePlay } from './util.js';
 
 let lastGameId = 0;
 
@@ -68,74 +69,6 @@ export function CardSpace({
 
   function passTurn() {
     sendMessage('passTurn');
-  }
-
-  function missingLowCard() {
-    return gameData.initial && !scratchState.some(card => card.id === gameData.lowest);
-  }
-
-  function isFreePlay() {
-    const lastPlay = getLastPlay();
-    console.log(lastPlay);
-    return lastPlay.play === 'Free Play';
-  }
-
-  function getLastPlay() {
-    let lastPlay = null;
-
-    // find previous 3 players actions
-    for (let i = 1; i <= 3; i++) {
-      let currentIndex = seatIndex - i;
-      if (currentIndex < 0) {
-        currentIndex = currentIndex + 4;
-      }
-      if (gameData.last[currentIndex] !== null && gameData.last[currentIndex] !== 'pass') {
-        lastPlay = gameData.last[currentIndex];
-        break;
-      }
-    }
-
-    if (!lastPlay) {
-      return { name: 'Free Play', play: 'Free Play', rank: 0 };
-    }
-
-    return lastPlay;
-  }
-
-  function restrictPlay() {
-    // enforce game rules here
-    // false = okay to play
-    // true = disable submit button
-
-    const lastPlay = getLastPlay();
-
-    if (lastPlay.play === 'Free Play') {
-      return false;
-    }
-
-    // this section allows bombs to be played on anything
-    // and straight flushes to be played on Straights or Flushes
-    let playTypeValidation = false;
-    if (detectedHand.play === lastPlay.play) {
-      playTypeValidation = true;
-    }
-    if (detectedHand.play === 'Bomb') {
-      playTypeValidation = true;
-    }
-
-    if (lastPlay.play === 'Straight' && detectedHand.play === 'Straight Flush') {
-      playTypeValidation = true;
-    }
-
-    if (lastPlay.play === 'Flush' && detectedHand.play === 'Straight Flush') {
-      playTypeValidation = true;
-    }
-
-    if (playTypeValidation && detectedHand.rank > lastPlay.rank) {
-      return false;
-    }
-
-    return true;
   }
 
   return (
@@ -238,7 +171,10 @@ export function CardSpace({
             <Button
               style={{ position: 'absolute', top: '5px', right: '5px', width: '100px' }}
               disabled={
-                detectedHand.rank === 0 || !isYourTurn || missingLowCard() || restrictPlay()
+                detectedHand.rank === 0 ||
+                !isYourTurn ||
+                missingLowCard(gameData, scratchState) ||
+                restrictPlay(gameData, seatIndex, detectedHand)
               }
               onClick={() => submitHand()}
             >
@@ -246,7 +182,7 @@ export function CardSpace({
             </Button>
             <Button
               style={{ position: 'absolute', bottom: '5px', right: '5px', width: '100px' }}
-              disabled={!isYourTurn || isFreePlay()}
+              disabled={!isYourTurn || isFreePlay(gameData, seatIndex)}
               onClick={() => passTurn()}
             >
               Pass
@@ -255,7 +191,7 @@ export function CardSpace({
           {/* <p>{JSON.stringify(detectedHand)}</p>
           {!gameData.rank[seatIndex] ? (
             <div>
-              {isYourTurn && missingLowCard() ? (
+              {isYourTurn && missingLowCard(gameData, scratchState) ? (
                 <p>
                   {`You must play the lowest card ( ${gameData.lowest} ) as part of your first hand.`}
                 </p>
