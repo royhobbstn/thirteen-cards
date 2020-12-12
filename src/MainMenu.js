@@ -65,7 +65,7 @@ const MainMenu = ({ roomNameLabel, socketRef, gameData, sendMessage }) => {
             </Button>
           ) : null}
           {gameData && gameData.stage === 'game' && seatIndex !== null ? (
-            <Button style={{ marginRight: '10px' }} onClick={() => sendMessage('leaveGame', null)}>
+            <Button style={{ marginRight: '10px' }} onClick={() => sendMessage('forfeit', null)}>
               Forfeit
             </Button>
           ) : null}

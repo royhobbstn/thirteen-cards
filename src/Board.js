@@ -4,9 +4,9 @@ import { SeatingStageBoard } from './SeatingStageBoard';
 import { GameStageBoard } from './GameStageBoard';
 
 export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
-  let boardHeight = windowDimensions.height - 200 - 50;
-  if (boardHeight < 300) {
-    boardHeight = 300;
+  let boardHeight = windowDimensions.height - 300;
+  if (boardHeight < 250) {
+    boardHeight = 250;
   }
 
   // pane for table about 62.5% of total width

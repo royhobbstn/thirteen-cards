@@ -11,11 +11,7 @@ export function StatusBar({ gameData, socketRef, sendMessage, seatIndex }) {
     return seat === socketRef.current.id;
   });
 
-  console.log(gameData);
-
   const lastPlay = getLastPlay(gameData, seatIndex);
-
-  console.log({ lastPlay });
 
   return (
     <React.Fragment>
