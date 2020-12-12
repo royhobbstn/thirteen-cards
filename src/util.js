@@ -32,7 +32,6 @@ export function getLastPlay(gameData, seatIndex) {
 
 export function isFreePlay(gameData, seatIndex) {
   const lastPlay = getLastPlay(gameData, seatIndex);
-  console.log(lastPlay);
   return lastPlay.play === 'Free Play';
 }
 

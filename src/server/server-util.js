@@ -47,14 +47,11 @@ function findRanksAvailable(room) {
 }
 
 export function resetGame(room, sendToEveryone, io) {
-  console.log('no more remaining players');
   if (room.stage === 'game') {
-    console.log('setting to done');
     room.stage = 'done';
     room.cards = [null, null, null, null];
     setTimeout(() => {
       // reset
-      console.log('resetting');
       room.stage = 'seating';
       room.rank = [null, null, null, null];
       room.cards = [null, null, null, null];
@@ -65,7 +62,6 @@ export function resetGame(room, sendToEveryone, io) {
       room.turnIndex = 0;
       room.board = [];
       room.gameId = 0;
-      console.log('sending');
       sendToEveryone(io, room);
     }, 5000);
   }
@@ -75,7 +71,6 @@ export function countRemainingPlayers(room) {
   // mark game as over if all warm seats have a rank
   let remainingPlayers = 0;
   for (let [i, v] of room.seated.entries()) {
-    console.log({ i, v, rank: room.rank[i] });
     // if seat is warm and has no cards and no rank
     if (v && !room.rank[i]) {
       remainingPlayers++;

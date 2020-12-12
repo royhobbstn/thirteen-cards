@@ -85,12 +85,8 @@ io.on('connection', socket => {
   socket.on('announceConnection', () => {
     roomData[roomName].lastModified = Date.now();
 
-    // officially add player
+    // officially add player and add a stat row
     roomData[roomName].players.push(socket.id);
-
-    // give them a stat row
-    console.log('points');
-    console.log({ socket: socket.id });
     roomData[roomName].stats[socket.id] = { points: 0, playerGames: 0 };
 
     // update everyones game data (mostly for newly connected user)
@@ -160,7 +156,6 @@ io.on('connection', socket => {
 
       let playerCount = 0;
       roomData[roomName].seated.forEach((seat, index) => {
-        console.log({ seat, index });
         if (seat !== null) {
           playerCount++;
           roomData[roomName].cards[index] = [...myDeck.draw(13)].sort((a, b) => {
@@ -206,8 +201,6 @@ io.on('connection', socket => {
     // ex: Singles, Pairs, etc
 
     const detectedHand = getDetectedCards(message.body);
-    console.log(detectedHand);
-
     const submittedHand = message.body.map(d => d.id);
 
     // populate / sort board
@@ -229,9 +222,7 @@ io.on('connection', socket => {
     // check for win condition
     if (roomData[roomName].cards[seatIndex].length === 0) {
       const assignRank = findLowestAvailableRank(roomData[roomName]);
-      console.log('assign rank ' + assignRank);
       roomData[roomName].rank[seatIndex] = assignRank;
-      console.log({ socket: socket.id, roomName, assignRank });
       roomData[roomName].stats[socket.id].points += assignGamePoints(
         roomData[roomName],
         assignRank,
@@ -244,13 +235,13 @@ io.on('connection', socket => {
     const [orphanedSeatCount, orphanedSeatIndex] = findOrphanedSeat(roomData[roomName]);
 
     if (orphanedSeatCount === 1) {
-      console.log('orphaned seat');
       roomData[roomName].rank[orphanedSeatIndex] = highestAvailableRank;
-      roomData[roomName].stats[socket.id].points += assignGamePoints(
+      const orphanSocket = roomData[roomName].seated[orphanedSeatIndex];
+      roomData[roomName].stats[orphanSocket].points += assignGamePoints(
         roomData[roomName],
         highestAvailableRank,
       );
-      roomData[roomName].stats[socket.id].playerGames += roomData[roomName].startingPlayers;
+      roomData[roomName].stats[orphanSocket].playerGames += roomData[roomName].startingPlayers;
     }
 
     const remainingPlayers = countRemainingPlayers(roomData[roomName]);
@@ -289,25 +280,21 @@ io.on('connection', socket => {
     const highestAvailableRank = findHighestAvailableRank(roomData[roomName]);
     // assign highestAvailableRank to forfeiter
     roomData[roomName].rank[seatIndex] = highestAvailableRank;
-    console.log({ seatIndex, socket: socket.id, roomName, highestAvailableRank });
-
     roomData[roomName].stats[socket.id].points += assignGamePoints(
       roomData[roomName],
       highestAvailableRank,
     );
     roomData[roomName].stats[socket.id].playerGames += roomData[roomName].startingPlayers;
-    // see if people are still in room
 
+    // see if people are still in room
     const nextHighestAvailableRank = findHighestAvailableRank(roomData[roomName]);
 
     const [orphanedSeatCount, orphanedSeatIndex] = findOrphanedSeat(roomData[roomName]);
 
     if (orphanedSeatCount === 1) {
-      console.log('orphaned seat');
       roomData[roomName].rank[orphanedSeatIndex] = nextHighestAvailableRank;
       // find socketId of orphan
       const orphanSocket = roomData[roomName].seated[orphanedSeatIndex];
-      console.log({ socket: orphanSocket, roomName, nextHighestAvailableRank });
       roomData[roomName].stats[orphanSocket].points += assignGamePoints(
         roomData[roomName],
         nextHighestAvailableRank,

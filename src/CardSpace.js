@@ -45,20 +45,17 @@ export function CardSpace({
 
   // if mismatch between listState and original
   if (gameData.gameId !== lastGameId) {
-    console.log('HARD RESET');
     updateListState(cardObjects);
     updateScratchState([]);
     lastGameId = gameData.gameId;
   }
 
   function addCardToScratch(card) {
-    console.log('addCardToScratch');
     updateScratchState([...scratchState, { id: card, name: card }]);
     updateListState([...listState.filter(d => d.id !== card)]);
   }
 
   function returnCardToMain(card) {
-    console.log('returnCardToMain');
     updateListState([...listState, { id: card, name: card }]);
     updateScratchState([...scratchState.filter(d => d.id !== card)]);
   }
