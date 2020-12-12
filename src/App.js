@@ -15,9 +15,10 @@ function getWindowDimensions() {
 
 function App() {
   const socketRef = React.useRef(null);
+  const [socketReady, updateSocketReady] = React.useState(false);
   const [roomNameLabel, updateRoomNameLabel] = React.useState('');
   const [windowDimensions, setWindowDimensions] = React.useState(getWindowDimensions());
-  const { gameData, sendMessage } = useGame(socketRef);
+  const { gameData, sendMessage } = useGame(socketRef, socketReady);
 
   React.useEffect(() => {
     function handleResize() {
@@ -45,6 +46,8 @@ function App() {
             render={props => (
               <Room
                 {...props}
+                socketReady={socketReady}
+                updateSocketReady={updateSocketReady}
                 roomNameLabel={roomNameLabel}
                 updateRoomNameLabel={updateRoomNameLabel}
                 socketRef={socketRef}

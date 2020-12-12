@@ -12,8 +12,9 @@ const Room = ({
   windowDimensions,
   gameData,
   sendMessage,
+  socketReady,
+  updateSocketReady,
 }) => {
-  const [socketReady, updateSocketReady] = React.useState(false);
   const roomName = match.params.roomId;
 
   React.useEffect(() => {

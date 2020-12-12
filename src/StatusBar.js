@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Menu, Button } from 'semantic-ui-react';
+import { Menu } from 'semantic-ui-react';
 import { getLastPlay } from './util.js';
 
 export function StatusBar({ gameData, socketRef, sendMessage, seatIndex }) {

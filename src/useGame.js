@@ -1,14 +1,17 @@
 import * as React from 'react';
 
-const useGame = socketRef => {
+const useGame = (socketRef, socketReady) => {
   const [gameData, setGameData] = React.useState(null);
 
   // the only message type sent back by server
   React.useEffect(() => {
+    if (!socketReady) {
+      return;
+    }
     socketRef.current.on('gameData', message => {
       setGameData(message);
     });
-  }, [socketRef]);
+  }, [socketRef, socketReady]);
 
   // generic message sender
   const sendMessage = (messageType, messageBody) => {
