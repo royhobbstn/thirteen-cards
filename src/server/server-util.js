@@ -21,14 +21,17 @@ export function findHighestAvailableRank(room) {
       assignRank = value;
     }
   }
-  if (assignRank > room.startingPlayers) {
-    assignRank = room.startingPlayers;
-  }
+
   return assignRank;
 }
 
 function findRanksAvailable(room) {
-  const ranksAvailable = [1, 2, 3, 4];
+  const ranksAvailable = [1, 2, 3, 4].map(r => {
+    if (r > room.startingPlayers) {
+      return null;
+    }
+    return r;
+  });
   for (let value of room.rank) {
     if (value === 1) {
       ranksAvailable[0] = null;
@@ -43,15 +46,15 @@ function findRanksAvailable(room) {
   return ranksAvailable;
 }
 
-export function resetGame(room, sendToEveryone) {
+export function resetGame(room, sendToEveryone, io) {
   console.log('no more remaining players');
   if (room.stage === 'game') {
     console.log('setting to done');
     room.stage = 'done';
+    room.cards = [null, null, null, null];
     setTimeout(() => {
       // reset
       console.log('resetting');
-      room.stats = {};
       room.stage = 'seating';
       room.rank = [null, null, null, null];
       room.cards = [null, null, null, null];
@@ -63,7 +66,7 @@ export function resetGame(room, sendToEveryone) {
       room.board = [];
       room.gameId = 0;
       console.log('sending');
-      sendToEveryone(io, roomName, room);
+      sendToEveryone(io, room);
     }, 5000);
   }
 }
@@ -104,4 +107,8 @@ export function findSeatIndex(room, socketId) {
     return acc;
   }, null);
   return seatIndex;
+}
+
+export function assignGamePoints(room, assignRank) {
+  return room.startingPlayers - assignRank + 1;
 }

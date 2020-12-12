@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { Tab } from 'semantic-ui-react';
 import { Chat } from './Chat';
+import { Stats } from './Stats';
+import { Rules } from './Rules';
 
 const TabContainer = ({ socketRef, gameData }) => {
   const panes = [
@@ -15,14 +17,14 @@ const TabContainer = ({ socketRef, gameData }) => {
       menuItem: 'Stats',
       pane: {
         key: 'tab2',
-        content: <p>Hi</p>,
+        content: <Stats socketRef={socketRef} gameData={gameData} />,
       },
     },
     {
       menuItem: 'Rules',
       pane: {
         key: 'tab3',
-        content: <p>Rules</p>,
+        content: <Rules />,
       },
     },
   ];

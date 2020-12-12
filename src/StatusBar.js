@@ -15,15 +15,7 @@ export function StatusBar({ gameData, socketRef, sendMessage, seatIndex }) {
 
   return (
     <React.Fragment>
-      {gameData.stage === 'done' ? (
-        <React.Fragment>
-          <Menu.Item header>Game Has Been Completed</Menu.Item>
-          {seatIndex ? <Menu.Item header>Your Rank {gameData.rank[seatIndex]}</Menu.Item> : null}
-          <Menu.Item position="right">
-            <Button onClick={() => sendMessage('setGameStatus', 'seating')}>Clear Game</Button>
-          </Menu.Item>
-        </React.Fragment>
-      ) : null}
+      {gameData.stage === 'done' ? <Menu.Item header>Game Has Been Completed</Menu.Item> : null}
       {gameData.stage === 'seating' && !isSeated ? (
         <Menu.Item header>Pick a Seat...</Menu.Item>
       ) : null}

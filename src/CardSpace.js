@@ -47,6 +47,7 @@ export function CardSpace({
   if (gameData.gameId !== lastGameId) {
     console.log('HARD RESET');
     updateListState(cardObjects);
+    updateScratchState([]);
     lastGameId = gameData.gameId;
   }
 
