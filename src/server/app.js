@@ -407,7 +407,15 @@ function sendToEveryone(io, data) {
     // copy this structure or else we're in a world of trouble
     const copy = JSON.parse(JSON.stringify(data));
 
-    // TODO hide cards of other people
+    for (let [index, cards] of Object.entries(copy.cards)) {
+      if (cards === null) {
+        continue;
+      }
+      if (player !== copy.seated[index]) {
+        copy.cards[index] = cards.map(() => 'Card');
+      }
+    }
+
     io.to(player).emit('gameData', copy);
   }
 }
