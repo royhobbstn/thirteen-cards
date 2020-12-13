@@ -82,21 +82,28 @@ io.on('connection', socket => {
     io.in(roomName).emit(CHAT, message);
   });
 
-  socket.on('announceConnection', () => {
+  socket.on('announceConnection', ({ lastKnownSocket }) => {
     roomData[roomName].lastModified = Date.now();
+    roomData[roomName].players.push(socket.id); // officially add new player
 
-    // officially add player and add a stat row
-    roomData[roomName].players.push(socket.id);
-    roomData[roomName].stats[socket.id] = {
-      points: 0,
-      playerGames: 0,
-      games: 0,
-      first: 0,
-      second: 0,
-      third: 0,
-      fourth: 0,
-      bombs: 0,
-    };
+    if (lastKnownSocket != null && lastKnownSocket !== socket.id && lastKnownSocket !== 'null') {
+      const room = JSON.stringify(roomData[roomName]);
+      const replaced = room.split(lastKnownSocket).join(socket.id);
+      roomData[roomName] = JSON.parse(replaced);
+    }
+    // add a stat row if needed
+    if (!roomData[roomName].stats[socket.id]) {
+      roomData[roomName].stats[socket.id] = {
+        points: 0,
+        playerGames: 0,
+        games: 0,
+        first: 0,
+        second: 0,
+        third: 0,
+        fourth: 0,
+        bombs: 0,
+      };
+    }
 
     // update everyones game data (mostly for newly connected user)
     sendToEveryone(io, roomData[roomName]);

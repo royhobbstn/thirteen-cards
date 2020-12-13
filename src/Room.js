@@ -27,8 +27,10 @@ const Room = ({
     });
     socketRef.current.on('connect', function () {
       updateSocketReady(true);
+      const lastKnownSocket = localStorage.getItem('lastKnownSocket');
+      localStorage.setItem('lastKnownSocket', socketRef.current.id);
       // here send message to server to tell it to announce connection to everyone and send updated game state.
-      socketRef.current.emit('announceConnection', null);
+      socketRef.current.emit('announceConnection', { lastKnownSocket });
     });
 
     return () => {
