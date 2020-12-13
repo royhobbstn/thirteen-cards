@@ -57,7 +57,7 @@ io.on('connection', socket => {
     // game score is NumberPlayers - rank + 1
     // 1st place in 2 player game (2), 3rd place in 4 player game (2) = 2 + 2 pts
     // divided by player games (4 / 6) .67 * 4 = 2.667 rank
-    room.stats = {}; // by socketId { 'socketId': { points: 0, playerGames: 0 } }
+    room.stats = {}; // by socketId { 'socketId': { points: 0, playerGames: 0, games: 0, first: 0, second: 0, third: 0, fourth: 0, bombs: 0 } }
     /*** specific below ***/
     room.rank = [null, null, null, null]; // 1,2,3,4th place
     room.seated = [null, null, null, null]; // corresponds to table position. value of null is empty, '--name' is an AI, 'kslfkjahsdf' is a socket.id
@@ -87,7 +87,16 @@ io.on('connection', socket => {
 
     // officially add player and add a stat row
     roomData[roomName].players.push(socket.id);
-    roomData[roomName].stats[socket.id] = { points: 0, playerGames: 0 };
+    roomData[roomName].stats[socket.id] = {
+      points: 0,
+      playerGames: 0,
+      games: 0,
+      first: 0,
+      second: 0,
+      third: 0,
+      fourth: 0,
+      bombs: 0,
+    };
 
     // update everyones game data (mostly for newly connected user)
     sendToEveryone(io, roomData[roomName]);
@@ -201,6 +210,12 @@ io.on('connection', socket => {
     // ex: Singles, Pairs, etc
 
     const detectedHand = getDetectedCards(message.body);
+
+    // record bombs from this
+    if (detectedHand.play === 'Bomb') {
+      roomData[roomName].stats[socket.id].bombs += 1;
+    }
+
     const submittedHand = message.body.map(d => d.id);
 
     // populate / sort board
@@ -228,6 +243,16 @@ io.on('connection', socket => {
         assignRank,
       );
       roomData[roomName].stats[socket.id].playerGames += roomData[roomName].startingPlayers;
+      roomData[roomName].stats[socket.id].games += 1;
+      if (assignRank === 1) {
+        roomData[roomName].stats[socket.id].first += 1;
+      } else if (assignRank === 2) {
+        roomData[roomName].stats[socket.id].second += 1;
+      } else if (assignRank === 3) {
+        roomData[roomName].stats[socket.id].third += 1;
+      } else if (assignRank === 4) {
+        roomData[roomName].stats[socket.id].fourth += 1;
+      }
     }
 
     const highestAvailableRank = findHighestAvailableRank(roomData[roomName]);
@@ -242,6 +267,16 @@ io.on('connection', socket => {
         highestAvailableRank,
       );
       roomData[roomName].stats[orphanSocket].playerGames += roomData[roomName].startingPlayers;
+      roomData[roomName].stats[orphanSocket].games += 1;
+      if (highestAvailableRank === 1) {
+        roomData[roomName].stats[orphanSocket].first += 1;
+      } else if (highestAvailableRank === 2) {
+        roomData[roomName].stats[orphanSocket].second += 1;
+      } else if (highestAvailableRank === 3) {
+        roomData[roomName].stats[orphanSocket].third += 1;
+      } else if (highestAvailableRank === 4) {
+        roomData[roomName].stats[orphanSocket].fourth += 1;
+      }
     }
 
     const remainingPlayers = countRemainingPlayers(roomData[roomName]);
@@ -285,7 +320,16 @@ io.on('connection', socket => {
       highestAvailableRank,
     );
     roomData[roomName].stats[socket.id].playerGames += roomData[roomName].startingPlayers;
-
+    roomData[roomName].stats[socket.id].games += 1;
+    if (highestAvailableRank === 1) {
+      roomData[roomName].stats[socket.id].first += 1;
+    } else if (highestAvailableRank === 2) {
+      roomData[roomName].stats[socket.id].second += 1;
+    } else if (highestAvailableRank === 3) {
+      roomData[roomName].stats[socket.id].third += 1;
+    } else if (highestAvailableRank === 4) {
+      roomData[roomName].stats[socket.id].fourth += 1;
+    }
     // see if people are still in room
     const nextHighestAvailableRank = findHighestAvailableRank(roomData[roomName]);
 
@@ -300,6 +344,16 @@ io.on('connection', socket => {
         nextHighestAvailableRank,
       );
       roomData[roomName].stats[orphanSocket].playerGames += roomData[roomName].startingPlayers;
+      roomData[roomName].stats[orphanSocket].games += 1;
+      if (nextHighestAvailableRank === 1) {
+        roomData[roomName].stats[orphanSocket].first += 1;
+      } else if (nextHighestAvailableRank === 2) {
+        roomData[roomName].stats[orphanSocket].second += 1;
+      } else if (nextHighestAvailableRank === 3) {
+        roomData[roomName].stats[orphanSocket].third += 1;
+      } else if (nextHighestAvailableRank === 4) {
+        roomData[roomName].stats[orphanSocket].fourth += 1;
+      }
     }
 
     const remainingPlayers = countRemainingPlayers(roomData[roomName]);

@@ -46,3 +46,11 @@ button.btngrp-bar.ui.basic.button.primary.big-outline {
   font-size: initial;
   text-transform: uppercase;
 }
+
+table.ui.table.stats-table td {
+  padding: 0.4em;
+}
+
+table.ui.table.stats-table th {
+  padding: 0.4em;
+}

@@ -35,7 +35,7 @@ const Room = ({
       socketRef.current.disconnect();
       socketRef.current.removeAllListeners();
     };
-  }, [roomName, socketRef]);
+  }, [roomName, socketRef, updateSocketReady]);
 
   // keep name in menu in sync with actual room name
   React.useEffect(() => {
