@@ -31,7 +31,8 @@
     "build": "react-scripts build",
     "eject": "react-scripts eject",
     "server-dev": "NODE_ENV=development nodemon src/server/app.js",
-    "start": "NODE_ENV=production node src/server/app.js"
+    "start": "NODE_ENV=production node src/server/app.js",
+    "loc": "scc --avg-wage 130000 --by-file --exclude-dir node_modules --exclude-dir build --include-ext js ."
   },
   "eslintConfig": {
     "extends": [

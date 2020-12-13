@@ -2,8 +2,8 @@ import * as React from 'react';
 import { Input, Button, Grid, Modal } from 'semantic-ui-react';
 import { ChromePicker } from 'react-color';
 
-const Name = ({ settingsAreVisible, updateSettingsAreVisible, socketRef }) => {
-  const [userName, updateUserName] = React.useState(localStorage.getItem('userName'));
+const Settings = ({ settingsAreVisible, updateSettingsAreVisible, socketRef }) => {
+  const [userName, updateUserName] = React.useState(localStorage.getItem('userName') || '');
   const [colorChoice, updateColorChoice] = React.useState(localStorage.getItem('colorChoice'));
   const [colorPickerVisible, setColorPickerVisible] = React.useState(false);
 
@@ -21,7 +21,9 @@ const Name = ({ settingsAreVisible, updateSettingsAreVisible, socketRef }) => {
     localStorage.setItem('userName', userName);
     localStorage.setItem('colorChoice', colorChoice);
     updateSettingsAreVisible(false);
-    socketRef.current.emit('updateSettings', { userName, colorChoice });
+    if (socketRef && socketRef.current) {
+      socketRef.current.emit('updateSettings', { userName, colorChoice });
+    }
   };
 
   const pressEnter = event => {
@@ -90,7 +92,7 @@ const Name = ({ settingsAreVisible, updateSettingsAreVisible, socketRef }) => {
   );
 };
 
-export default Name;
+export default Settings;
 
 function getRandomColor() {
   var color = '#';
