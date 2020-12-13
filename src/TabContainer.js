@@ -29,7 +29,11 @@ const TabContainer = ({ socketRef, gameData }) => {
     },
   ];
 
-  return <Tab style={{ marginRight: '10px' }} panes={panes} renderActiveOnly={false} />;
+  return (
+    <div>
+      <Tab style={{ marginRight: '10px' }} panes={panes} renderActiveOnly={false} />
+    </div>
+  );
 };
 
 export default TabContainer;
