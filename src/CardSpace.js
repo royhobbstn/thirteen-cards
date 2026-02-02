@@ -51,6 +51,9 @@ function CardImage({ cardId, rotation, verticalOffset }) {
   );
 }
 
+// Minimum delay between plays (ms) - must match Board.js
+const PLAY_COOLDOWN_MS = 1200;
+
 export function CardSpace({
   seatIndex,
   stage,
@@ -61,16 +64,52 @@ export function CardSpace({
 }) {
   const [listState, updateListState] = React.useState(cardObjects);
   const [scratchState, updateScratchState] = React.useState([]);
+  const [playCooldown, setPlayCooldown] = React.useState(false);
   const lastGameIdRef = React.useRef(null);
+  const prevBoardRef = React.useRef([]);
+  const prevLastRef = React.useRef([null, null, null, null]);
 
   // Reset card states when a new game starts
   React.useEffect(() => {
     if (gameData.gameId !== lastGameIdRef.current) {
       updateListState(cardObjects);
       updateScratchState([]);
+      setPlayCooldown(false);
       lastGameIdRef.current = gameData.gameId;
     }
   }, [gameData.gameId, cardObjects]);
+
+  // Detect plays and passes to trigger cooldown
+  React.useEffect(() => {
+    const prevBoard = prevBoardRef.current;
+    const currentBoard = gameData.board ?? [];
+    const prevLast = prevLastRef.current;
+    const currentLast = gameData.last ?? [null, null, null, null];
+
+    // Check for new cards played
+    const newCards = currentBoard.filter(card => !prevBoard.includes(card));
+    const hasNewPlay = newCards.length > 0;
+
+    // Check for new pass
+    let hasNewPass = false;
+    for (let i = 0; i < 4; i++) {
+      if (currentLast[i] === 'pass' && prevLast[i] !== 'pass') {
+        hasNewPass = true;
+        break;
+      }
+    }
+
+    if (hasNewPlay || hasNewPass) {
+      setPlayCooldown(true);
+      const timeout = setTimeout(() => setPlayCooldown(false), PLAY_COOLDOWN_MS);
+      prevBoardRef.current = currentBoard;
+      prevLastRef.current = [...currentLast];
+      return () => clearTimeout(timeout);
+    }
+
+    prevBoardRef.current = currentBoard;
+    prevLastRef.current = [...currentLast];
+  }, [gameData.board, gameData.last]);
 
   if (seatIndex === null) {
     return null;
@@ -232,6 +271,7 @@ export function CardSpace({
             <Button
               style={{ position: 'absolute', top: '5px', right: '5px', width: '100px' }}
               disabled={
+                playCooldown ||
                 detectedHand.rank === 0 ||
                 !isYourTurn ||
                 missingLowCard(gameData, scratchState) ||
@@ -239,14 +279,14 @@ export function CardSpace({
               }
               onClick={() => submitHand()}
             >
-              Play
+              {playCooldown ? 'Wait...' : 'Play'}
             </Button>
             <Button
               style={{ position: 'absolute', bottom: '5px', right: '5px', width: '100px' }}
-              disabled={!isYourTurn || isFreePlay(gameData, seatIndex)}
+              disabled={playCooldown || !isYourTurn || isFreePlay(gameData, seatIndex)}
               onClick={() => passTurn()}
             >
-              Pass
+              {playCooldown ? 'Wait...' : 'Pass'}
             </Button>
           </div>
         </div>

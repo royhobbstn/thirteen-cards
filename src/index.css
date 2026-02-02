@@ -109,14 +109,171 @@ table.ui.table.stats-table th {
   transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
 }
 
-/* Board card entry animation */
+/* Board card entry animations - directional based on seat position */
+/* More dramatic: 150px travel, 0.5s duration, with bounce effect */
+@keyframes cardSlideFromTop {
+  0% { opacity: 0; transform: translateY(-150px) scale(0.7) rotate(-5deg); }
+  60% { opacity: 1; transform: translateY(10px) scale(1.05) rotate(1deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+
+@keyframes cardSlideFromRight {
+  0% { opacity: 0; transform: translateX(150px) scale(0.7) rotate(5deg); }
+  60% { opacity: 1; transform: translateX(-10px) scale(1.05) rotate(-1deg); }
+  100% { opacity: 1; transform: translateX(0) scale(1) rotate(0deg); }
+}
+
+@keyframes cardSlideFromBottom {
+  0% { opacity: 0; transform: translateY(150px) scale(0.7) rotate(5deg); }
+  60% { opacity: 1; transform: translateY(-10px) scale(1.05) rotate(-1deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+
+@keyframes cardSlideFromLeft {
+  0% { opacity: 0; transform: translateX(-150px) scale(0.7) rotate(-5deg); }
+  60% { opacity: 1; transform: translateX(10px) scale(1.05) rotate(1deg); }
+  100% { opacity: 1; transform: translateX(0) scale(1) rotate(0deg); }
+}
+
+/* Fallback for unknown seat */
 @keyframes cardSlideIn {
-  0% { opacity: 0; transform: translateY(-30px) scale(0.9); }
+  0% { opacity: 0; transform: translateY(-100px) scale(0.7); }
+  60% { opacity: 1; transform: translateY(10px) scale(1.05); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .board-card {
-  animation: cardSlideIn 0.3s ease-out forwards;
+  animation: cardSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.board-card-from-top {
+  animation: cardSlideFromTop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.board-card-from-right {
+  animation: cardSlideFromRight 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.board-card-from-bottom {
+  animation: cardSlideFromBottom 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.board-card-from-left {
+  animation: cardSlideFromLeft 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Play type announcement overlay */
+@keyframes announceSlide {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+  20% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+  35% { transform: translate(-50%, -50%) scale(1); }
+  75% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+}
+
+@keyframes bombShake {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  10%, 30%, 50%, 70%, 90% { transform: translate(-52%, -50%) scale(1.02); }
+  20%, 40%, 60%, 80% { transform: translate(-48%, -50%) scale(1.02); }
+}
+
+.play-announcement {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  animation: announceSlide 2s ease-out forwards;
+  pointer-events: none;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: 3px solid rgba(255, 215, 0, 0.6);
+}
+
+.play-announcement-text {
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #ffd700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+}
+
+.play-announcement-subtext {
+  font-size: 1rem;
+  color: #fff;
+  margin-top: 4px;
+  opacity: 0.9;
+}
+
+.play-announcement.bomb {
+  background: rgba(80, 0, 0, 0.85);
+  border-color: #ff4444;
+  animation: announceSlide 2s ease-out forwards, bombShake 0.5s ease-in-out 0.2s;
+}
+
+.play-announcement.bomb .play-announcement-text {
+  color: #ff4444;
+  font-size: 2.5rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 68, 68, 0.7);
+}
+
+/* Pass indicator near player seat */
+@keyframes passFade {
+  0% { opacity: 0; transform: scale(0.5); }
+  15% { opacity: 1; transform: scale(1.1); }
+  25% { transform: scale(1); }
+  80% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.8); }
+}
+
+.pass-indicator {
+  position: absolute;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 2px solid #888;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  animation: passFade 1.5s ease-out forwards;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Just played flash on player icon - more dramatic */
+@keyframes justPlayedFlash {
+  0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 1); }
+  25% { box-shadow: 0 0 30px 15px rgba(255, 215, 0, 0.8); }
+  50% { box-shadow: 0 0 40px 20px rgba(255, 215, 0, 0.6); }
+  75% { box-shadow: 0 0 25px 10px rgba(255, 215, 0, 0.4); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+}
+
+.just-played {
+  animation: justPlayedFlash 1s ease-out;
+  border-radius: 8px;
+}
+
+/* Cooldown overlay - subtle pulse to indicate waiting */
+@keyframes cooldownPulse {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.2; }
+}
+
+.cooldown-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, transparent 30%, rgba(0, 0, 0, 0.3) 100%);
+  pointer-events: none;
+  z-index: 90;
+  animation: cooldownPulse 0.6s ease-in-out infinite;
+  border-radius: 15px;
 }
 
 /* Respect user's motion preferences for accessibility */
@@ -131,9 +288,14 @@ table.ui.table.stats-table th {
     box-shadow: 0 0 12px 4px rgba(33, 208, 33, 0.8);
   }
 
-  .board-card {
+  .board-card,
+  .board-card-from-top,
+  .board-card-from-right,
+  .board-card-from-bottom,
+  .board-card-from-left {
     animation: none;
     opacity: 1;
+    transform: none;
   }
 
   .card-fan,
@@ -144,6 +306,32 @@ table.ui.table.stats-table th {
   .trophy-icon,
   .winner-star {
     animation: none;
+  }
+
+  .play-announcement {
+    animation: none;
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+
+  .play-announcement.bomb {
+    animation: none;
+  }
+
+  .pass-indicator {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .just-played {
+    animation: none;
+    box-shadow: 0 0 20px 10px rgba(255, 215, 0, 0.5);
+  }
+
+  .cooldown-overlay {
+    animation: none;
+    opacity: 0.15;
   }
 }
 

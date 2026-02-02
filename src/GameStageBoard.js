@@ -2,16 +2,17 @@ import * as React from 'react';
 import { Button, Icon, Label } from 'semantic-ui-react';
 import { isAiSeat } from './util';
 
-export function GameStageBoard({ gameData, sendMessage, socketRef, seatIndex }) {
+export function GameStageBoard({ gameData, sendMessage, socketRef, seatIndex, justPlayed }) {
   const seatId = gameData.seated[seatIndex];
   const isOccupied = seatId !== null;
   const isActiveTurn = isOccupied && seatIndex === gameData.turnIndex;
   const isSelf = seatId === socketRef.current.id;
   const isAi = isAiSeat(seatId);
   const turnClass = isActiveTurn ? (isSelf ? 'active-turn-self' : 'active-turn') : '';
+  const justPlayedClass = justPlayed ? 'just-played' : '';
 
   return (
-    <div className={turnClass}>
+    <div className={`${turnClass} ${justPlayedClass}`.trim()}>
       {/* Empty seat */}
       {seatId === null && (
         <Button disabled>

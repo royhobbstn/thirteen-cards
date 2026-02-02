@@ -3,29 +3,133 @@ import BackgroundImg from './images/table-bg.jpg';
 import { SeatingStageBoard } from './SeatingStageBoard';
 import { GameStageBoard } from './GameStageBoard';
 
+// Minimum delay between plays (ms)
+const PLAY_COOLDOWN_MS = 1200;
+
+// Format the play announcement text based on play type
+const formatPlayAnnouncement = lastPlay => {
+  if (!lastPlay || lastPlay === 'pass') return null;
+
+  const playType = lastPlay.play;
+  const name = lastPlay.name;
+
+  // Special styling for bombs
+  if (playType === 'Bomb') {
+    return { text: 'BOMB!', isBomb: true, subtext: name };
+  }
+
+  // Use the detailed name for all plays
+  return { text: name, isBomb: false, subtext: null };
+};
+
+// Get animation class based on which seat played
+const getAnimationClass = seat => {
+  const classes = [
+    'board-card-from-top',
+    'board-card-from-right',
+    'board-card-from-bottom',
+    'board-card-from-left',
+  ];
+  return classes[seat] ?? 'board-card';
+};
+
 export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
   const prevBoardRef = React.useRef([]);
-  const [animatingCards, setAnimatingCards] = React.useState(new Set());
+  const prevTurnIndexRef = React.useRef(null);
+  const prevLastForPassRef = React.useRef([null, null, null, null]);
 
+  const [animatingCards, setAnimatingCards] = React.useState(new Set());
+  const [lastPlayedSeat, setLastPlayedSeat] = React.useState(null);
+  const [playAnnouncement, setPlayAnnouncement] = React.useState(null);
+  const [announcementKey, setAnnouncementKey] = React.useState(0);
+  const [passIndicator, setPassIndicator] = React.useState(null);
+  const [justPlayedSeat, setJustPlayedSeat] = React.useState(null);
+  const [playCooldown, setPlayCooldown] = React.useState(false);
+
+  // Track who just played cards
   React.useEffect(() => {
     const prevBoard = prevBoardRef.current;
     const currentBoard = gameData.board;
+    const timeouts = [];
 
     // Find new cards that weren't in the previous board
     const newCards = currentBoard.filter(card => !prevBoard.includes(card));
 
     if (newCards.length > 0) {
+      // The previous turn holder is the one who just played
+      const whoPlayed = prevTurnIndexRef.current;
+      setLastPlayedSeat(whoPlayed);
+      setJustPlayedSeat(whoPlayed);
+
       setAnimatingCards(new Set(newCards));
-      // Clear animation state after animation completes
-      const timeout = setTimeout(() => {
-        setAnimatingCards(new Set());
-      }, 350 + newCards.length * 50); // base duration + stagger
+
+      // Start cooldown to prevent rapid plays
+      setPlayCooldown(true);
+      timeouts.push(setTimeout(() => setPlayCooldown(false), PLAY_COOLDOWN_MS));
+
+      // Show announcement for ALL plays (not just special ones)
+      const lastPlay = gameData.last?.[whoPlayed];
+      const announcement = formatPlayAnnouncement(lastPlay);
+      if (whoPlayed !== null && announcement) {
+        setPlayAnnouncement(announcement);
+        setAnnouncementKey(k => k + 1);
+        timeouts.push(setTimeout(() => setPlayAnnouncement(null), 2000));
+      }
+
+      // Clear animation state after animation completes (longer duration now)
+      timeouts.push(
+        setTimeout(() => {
+          setAnimatingCards(new Set());
+          setJustPlayedSeat(null);
+        }, 600 + newCards.length * 80)
+      ); // base duration + stagger
+
       prevBoardRef.current = currentBoard;
-      return () => clearTimeout(timeout);
     }
 
-    prevBoardRef.current = currentBoard;
-  }, [gameData.board]);
+    prevTurnIndexRef.current = gameData.turnIndex;
+
+    return () => timeouts.forEach(t => clearTimeout(t));
+  }, [gameData.board, gameData.turnIndex, gameData.last]);
+
+  // Track pass actions (separate effect with its own ref to avoid race conditions)
+  React.useEffect(() => {
+    const prevLast = prevLastForPassRef.current;
+    const currentLast = gameData.last ?? [null, null, null, null];
+    const timeouts = [];
+
+    for (let i = 0; i < 4; i++) {
+      // Detect when a seat changes to 'pass' (wasn't 'pass' before)
+      if (currentLast[i] === 'pass' && prevLast[i] !== 'pass') {
+        setPassIndicator(i);
+        timeouts.push(setTimeout(() => setPassIndicator(null), 1500));
+
+        // Start cooldown for pass actions too
+        setPlayCooldown(true);
+        timeouts.push(setTimeout(() => setPlayCooldown(false), PLAY_COOLDOWN_MS));
+        break;
+      }
+    }
+
+    prevLastForPassRef.current = [...currentLast];
+
+    return () => timeouts.forEach(t => clearTimeout(t));
+  }, [gameData.last]);
+
+  // Reset animation state when game stage changes (e.g., new game starts)
+  React.useEffect(() => {
+    if (gameData.stage !== 'game') {
+      setAnimatingCards(new Set());
+      setLastPlayedSeat(null);
+      setPlayAnnouncement(null);
+      setPassIndicator(null);
+      setJustPlayedSeat(null);
+      setPlayCooldown(false);
+      prevBoardRef.current = [];
+      prevTurnIndexRef.current = null;
+      prevLastForPassRef.current = [null, null, null, null];
+    }
+  }, [gameData.stage]);
   let boardHeight = windowDimensions.height - 300;
   if (boardHeight < 250) {
     boardHeight = 250;
@@ -102,9 +206,14 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
       >
         {gameData.board.map((card, index) => {
           const shouldAnimate = animatingCards.has(card);
+          const animationClass = shouldAnimate
+            ? lastPlayedSeat !== null
+              ? getAnimationClass(lastPlayedSeat)
+              : 'board-card'
+            : '';
           return (
             <div
-              className={shouldAnimate ? 'board-card' : ''}
+              className={animationClass}
               key={card}
               style={{
                 width: '64px',
@@ -156,8 +265,23 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
                   gameData={gameData}
                   sendMessage={sendMessage}
                   socketRef={socketRef}
+                  justPlayed={justPlayedSeat === seatIndex}
                 />
               ) : null}
+              {/* Pass indicator near seat */}
+              {passIndicator === seatIndex && (
+                <div
+                  className="pass-indicator"
+                  style={{
+                    top: seatIndex === 0 ? '60px' : seatIndex === 2 ? '-25px' : '50%',
+                    left: seatIndex === 3 ? '90px' : seatIndex === 1 ? '-50px' : '50%',
+                    transform:
+                      seatIndex === 0 || seatIndex === 2 ? 'translateX(-50%)' : 'translateY(-50%)',
+                  }}
+                >
+                  PASS
+                </div>
+              )}
             </div>
           );
         })}
@@ -181,6 +305,20 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
             </div>
           );
         })}
+        {/* Play type announcement overlay */}
+        {playAnnouncement && (
+          <div
+            key={announcementKey}
+            className={`play-announcement${playAnnouncement.isBomb ? ' bomb' : ''}`}
+          >
+            <div className="play-announcement-text">{playAnnouncement.text}</div>
+            {playAnnouncement.subtext && (
+              <div className="play-announcement-subtext">{playAnnouncement.subtext}</div>
+            )}
+          </div>
+        )}
+        {/* Cooldown indicator */}
+        {playCooldown && <div className="cooldown-overlay" />}
       </div>
     </div>
   );

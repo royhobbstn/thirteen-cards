@@ -196,8 +196,23 @@ export function shouldClearBoard(room) {
     }
   }
 
-  // If all active players except one have passed, and that one played (not passed),
-  // then clear the board
+  // Check if the player who last played cards has since finished (got a rank)
+  // In this case, if all remaining active players have passed, clear the board
+  let lastPlayedHasRank = false;
+  for (let i = 0; i < room.seated.length; i++) {
+    if (room.last[i] !== null && room.last[i] !== 'pass' && room.rank[i]) {
+      lastPlayedHasRank = true;
+      break;
+    }
+  }
+
+  // If the last player to play cards has finished and all active players have passed,
+  // clear the board so someone can start fresh
+  if (lastPlayedHasRank && activePlayers > 0 && passCount === activePlayers) {
+    return true;
+  }
+
+  // Normal case: all active players except one have passed, and that one played
   return activePlayers > 1 && passCount === activePlayers - 1 && lastPlayerIndex !== -1;
 }
 
