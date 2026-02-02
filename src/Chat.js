@@ -79,6 +79,9 @@ function getMessageNameStyle(message) {
 }
 
 function getMessageTextStyle(message) {
+  if (message.type === 'gamelog') {
+    return { color: '#4a7c59', fontStyle: 'italic', fontSize: '0.9em' };
+  }
   if (!message.userName) {
     return { color: 'dimgrey', fontStyle: 'italic' };
   }

@@ -6,6 +6,22 @@ import { GameStageBoard } from './GameStageBoard';
 // Minimum delay between plays (ms)
 const PLAY_COOLDOWN_MS = 1200;
 
+// Suit symbols for display
+const SUIT_SYMBOLS = {
+  c: '♣',
+  d: '♦',
+  h: '♥',
+  s: '♠',
+};
+
+// Format card IDs with suit symbols (e.g., "9d" → "9♦")
+// Only matches valid card ranks: 3-9, 10, J, Q, K, A, 2
+const formatCardWithSymbol = text => {
+  return text.replace(/\b(10|[3-9JQKA2])([cdhs])\b/g, (match, rank, suit) => {
+    return rank + (SUIT_SYMBOLS[suit] || suit);
+  });
+};
+
 // Format the play announcement text based on play type
 const formatPlayAnnouncement = lastPlay => {
   if (!lastPlay || lastPlay === 'pass') return null;
@@ -15,11 +31,11 @@ const formatPlayAnnouncement = lastPlay => {
 
   // Special styling for bombs
   if (playType === 'Bomb') {
-    return { text: 'BOMB!', isBomb: true, subtext: name };
+    return { text: 'BOMB!', isBomb: true, subtext: formatCardWithSymbol(name) };
   }
 
   // Use the detailed name for all plays
-  return { text: name, isBomb: false, subtext: null };
+  return { text: formatCardWithSymbol(name), isBomb: false, subtext: null };
 };
 
 // Get animation class based on which seat played

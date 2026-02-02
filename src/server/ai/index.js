@@ -11,6 +11,12 @@ import {
   clearBoardForFreePlay,
   shouldClearBoard,
 } from '../server-util.js';
+import {
+  logCardPlay,
+  logPass,
+  logFinish,
+  logBoardCleared,
+} from '../gameLog.js';
 
 // Re-export constants for use elsewhere
 export { AI_PERSONAS, AI_DISPLAY_NAMES, AI_COLORS };
@@ -100,13 +106,19 @@ function executeAiTurn(room, seatIndex, sendToEveryone, io, roomName) {
  */
 function executeAiPass(room, seatIndex, sendToEveryone, io, roomName) {
   const seatId = room.seated[seatIndex];
+  const CHAT = 'newChatMessage';
 
   // Record pass
   room.last[seatIndex] = 'pass';
 
+  // Log pass
+  const playerName = room.aliases[seatId];
+  io.in(roomName).emit(CHAT, logPass(playerName));
+
   // Check if board should be cleared
   if (shouldClearBoard(room)) {
     clearBoardForFreePlay(room);
+    io.in(roomName).emit(CHAT, logBoardCleared());
   }
 
   // Advance turn
@@ -125,6 +137,8 @@ function executeAiPass(room, seatIndex, sendToEveryone, io, roomName) {
 function executeAiPlay(room, seatIndex, play, sendToEveryone, io, roomName) {
   const seatId = room.seated[seatIndex];
   const submittedHand = play.cards;
+  const CHAT = 'newChatMessage';
+  const playerName = room.aliases[seatId];
 
   // Clear initial flag
   room.initial = false;
@@ -139,8 +153,11 @@ function executeAiPlay(room, seatIndex, play, sendToEveryone, io, roomName) {
   // Update board
   room.board = [...submittedHand].sort((a, b) => cardRank[b] - cardRank[a]);
 
-  // Record last play for seat
-  room.last[seatIndex] = play.detection;
+  // Record last play for seat and reset others' pass status
+  room.last = room.last.map((entry, idx) => (idx === seatIndex ? play.detection : null));
+
+  // Log card play (use sorted board for consistent display)
+  io.in(roomName).emit(CHAT, logCardPlay(playerName, play.detection, room.board));
 
   // Remove played cards from hand
   room.cards[seatIndex] = room.cards[seatIndex].filter(card => !submittedHand.includes(card));
@@ -160,6 +177,8 @@ function executeAiPlay(room, seatIndex, play, sendToEveryone, io, roomName) {
       else if (assignRank === 3) room.stats[seatId].third += 1;
       else if (assignRank === 4) room.stats[seatId].fourth += 1;
     }
+    // Log player finish
+    io.in(roomName).emit(CHAT, logFinish(playerName, assignRank));
   }
 
   // Check for orphaned player
@@ -178,6 +197,9 @@ function executeAiPlay(room, seatIndex, play, sendToEveryone, io, roomName) {
       else if (highestAvailableRank === 2) room.stats[orphanSocket].second += 1;
       else if (highestAvailableRank === 3) room.stats[orphanSocket].third += 1;
       else if (highestAvailableRank === 4) room.stats[orphanSocket].fourth += 1;
+      // Log orphan finish (only if not disconnected)
+      const orphanName = room.aliases[orphanSocket];
+      io.in(roomName).emit(CHAT, logFinish(orphanName, highestAvailableRank));
     }
   }
 

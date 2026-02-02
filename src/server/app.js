@@ -31,6 +31,14 @@ import {
   AI_DISPLAY_NAMES,
   AI_COLORS,
 } from './ai/index.js';
+import {
+  logGameStart,
+  logCardPlay,
+  logPass,
+  logForfeit,
+  logFinish,
+  logBoardCleared,
+} from './gameLog.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -342,6 +350,8 @@ io.on('connection', socket => {
 
     // Trigger AI turn if game just started and first turn is AI
     if (updatedStatus === 'game') {
+      // Log game start
+      io.in(roomName).emit(CHAT, logGameStart(roomData[roomName].startingPlayers));
       processAiTurn(roomData[roomName], sendToEveryone, io, roomName);
     }
   });
@@ -400,8 +410,14 @@ io.on('connection', socket => {
       return cardRank[b] - cardRank[a];
     });
 
-    // populate last play for seat
-    roomData[roomName].last[seatIndex] = detectedHand;
+    // populate last play for seat and reset others' pass status
+    roomData[roomName].last = roomData[roomName].last.map((entry, idx) =>
+      idx === seatIndex ? detectedHand : null,
+    );
+
+    // Log card play (use sorted board for consistent display)
+    const playerName = roomData[roomName].aliases[socket.id];
+    io.in(roomName).emit(CHAT, logCardPlay(playerName, detectedHand, roomData[roomName].board));
 
     // subtract cards from hand
     roomData[roomName].cards[seatIndex] = roomData[roomName].cards[seatIndex].filter(card => {
@@ -427,6 +443,8 @@ io.on('connection', socket => {
       } else if (assignRank === 4) {
         roomData[roomName].stats[socket.id].fourth += 1;
       }
+      // Log player finish
+      io.in(roomName).emit(CHAT, logFinish(playerName, assignRank));
     }
 
     const highestAvailableRank = findHighestAvailableRank(roomData[roomName]);
@@ -452,6 +470,9 @@ io.on('connection', socket => {
         } else if (highestAvailableRank === 4) {
           roomData[roomName].stats[orphanSocket].fourth += 1;
         }
+        // Log orphan finish (only if not disconnected)
+        const orphanName = roomData[roomName].aliases[orphanSocket];
+        io.in(roomName).emit(CHAT, logFinish(orphanName, highestAvailableRank));
       }
     }
 
@@ -479,9 +500,14 @@ io.on('connection', socket => {
 
     roomData[roomName].last[seatIndex] = 'pass';
 
+    // Log pass
+    const playerName = roomData[roomName].aliases[socket.id];
+    io.in(roomName).emit(CHAT, logPass(playerName));
+
     // Check if board should be cleared (all other players have passed)
     if (shouldClearBoard(roomData[roomName])) {
       clearBoardForFreePlay(roomData[roomName]);
+      io.in(roomName).emit(CHAT, logBoardCleared());
     }
 
     roomData[roomName].turnIndex = findNextPlayersTurn(roomData[roomName]);
@@ -497,6 +523,10 @@ io.on('connection', socket => {
 
     // find which seat message came from
     const seatIndex = findSeatIndex(roomData[roomName], socket.id);
+
+    // Log forfeit
+    const playerName = roomData[roomName].aliases[socket.id];
+    io.in(roomName).emit(CHAT, logForfeit(playerName));
 
     // find next available rank
     const highestAvailableRank = findHighestAvailableRank(roomData[roomName]);
@@ -542,6 +572,9 @@ io.on('connection', socket => {
         } else if (nextHighestAvailableRank === 4) {
           roomData[roomName].stats[orphanSocket].fourth += 1;
         }
+        // Log orphan finish (only if not disconnected)
+        const orphanName = roomData[roomName].aliases[orphanSocket];
+        io.in(roomName).emit(CHAT, logFinish(orphanName, nextHighestAvailableRank));
       }
     }
 
