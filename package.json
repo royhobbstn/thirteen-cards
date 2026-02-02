@@ -2,7 +2,6 @@
   "name": "thirteen-cards",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.6",
     "@testing-library/react": "^11.2.1",
@@ -15,7 +14,7 @@
     "react-dom": "^17.0.1",
     "react-draggable": "^4.4.3",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "4.0.0",
+    "react-scripts": "^5.0.1",
     "react-sortablejs": "^6.0.0",
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-react": "^2.0.1",
