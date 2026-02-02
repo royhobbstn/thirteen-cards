@@ -54,3 +54,90 @@ table.ui.table.stats-table td {
 table.ui.table.stats-table th {
   padding: 0.4em;
 }
+
+/* Turn indicator animations */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 8px 2px rgba(33, 133, 208, 0.6); }
+  50% { box-shadow: 0 0 20px 6px rgba(33, 133, 208, 0.9); }
+}
+
+@keyframes pulseSelf {
+  0%, 100% { box-shadow: 0 0 8px 2px rgba(33, 208, 33, 0.6); }
+  50% { box-shadow: 0 0 20px 6px rgba(33, 208, 33, 0.9); }
+}
+
+.active-turn {
+  animation: pulseGlow 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+.active-turn-self {
+  animation: pulseSelf 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* Card hover animations */
+.card-interactive {
+  cursor: pointer;
+  position: relative;
+}
+
+/* Only apply hover effects on devices that support hover (not touch) */
+@media (hover: hover) and (pointer: fine) {
+  .card-interactive:hover {
+    filter: brightness(1.1);
+    z-index: 10;
+  }
+
+  .card-fan:hover {
+    box-shadow: 4px 6px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .card-staged:hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 4px 6px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Card in main hand with fan styling */
+.card-fan {
+  transition: transform 0.2s ease-out, margin-top 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+/* Card in staged area (no fan) */
+.card-staged {
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+
+/* Board card entry animation */
+@keyframes cardSlideIn {
+  0% { opacity: 0; transform: translateY(-30px) scale(0.9); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.board-card {
+  animation: cardSlideIn 0.3s ease-out forwards;
+}
+
+/* Respect user's motion preferences for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .active-turn,
+  .active-turn-self {
+    animation: none;
+    box-shadow: 0 0 12px 4px rgba(33, 133, 208, 0.8);
+  }
+
+  .active-turn-self {
+    box-shadow: 0 0 12px 4px rgba(33, 208, 33, 0.8);
+  }
+
+  .board-card {
+    animation: none;
+    opacity: 1;
+  }
+
+  .card-fan,
+  .card-staged {
+    transition: none;
+  }
+}

@@ -8,20 +8,20 @@ const useGame = (socketRef, socketReady) => {
     if (!socketReady) {
       return;
     }
-    socketRef.current.on('gameData', message => {
+    const socket = socketRef.current;
+    socket.on('gameData', message => {
       setGameData(message);
     });
+    socket.on('playError', message => {
+      console.warn('Play rejected:', message.message);
+    });
+    return () => {
+      socket.off('gameData');
+      socket.off('playError');
+    };
   }, [socketRef, socketReady]);
 
-  // generic message sender
   const sendMessage = (messageType, messageBody) => {
-    // some messages should be reflected immediately in game data.
-    // do that here
-
-    // todo Later
-
-    // then send the message to the server
-
     socketRef.current.emit(messageType, {
       body: messageBody,
       senderId: socketRef.current.id,

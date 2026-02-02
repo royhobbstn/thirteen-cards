@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { Input, Button, Grid, Modal } from 'semantic-ui-react';
 import { ChromePicker } from 'react-color';
+import { getSafeUserName, getSafeColorChoice } from './util';
 
 const Settings = ({ settingsAreVisible, updateSettingsAreVisible, socketRef }) => {
-  const [userName, updateUserName] = React.useState(localStorage.getItem('userName') || '');
-  const [colorChoice, updateColorChoice] = React.useState(localStorage.getItem('colorChoice'));
+  const [userName, updateUserName] = React.useState(getSafeUserName());
+  const [colorChoice, updateColorChoice] = React.useState(getSafeColorChoice());
   const [colorPickerVisible, setColorPickerVisible] = React.useState(false);
 
   if (!colorChoice) {

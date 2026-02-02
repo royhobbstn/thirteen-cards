@@ -28,7 +28,6 @@ export function SeatingStageBoard({ gameData, sendMessage, socketRef, seatIndex 
           </Button.Content>
         </Button>
       ) : null}
-      {/* <p>{gameData.aliases[gameData.seated[seatIndex]]}</p> */}
     </React.Fragment>
   );
 }

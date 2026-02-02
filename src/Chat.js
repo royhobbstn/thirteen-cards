@@ -5,11 +5,11 @@ import useChat from './useChat';
 export function Chat({ socketRef }) {
   const { messages, sendMessage } = useChat(socketRef);
   const [newMessage, setNewMessage] = React.useState('');
-  const messagesEndRef = React.createRef();
+  const messagesEndRef = React.useRef(null);
 
   React.useEffect(() => {
-    messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, messagesEndRef]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   // value in message textarea
   const handleNewMessageChange = event => {

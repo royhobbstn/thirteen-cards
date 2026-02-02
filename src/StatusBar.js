@@ -40,7 +40,9 @@ export function StatusBar({ gameData, socketRef, sendMessage, seatIndex }) {
         ) : (
           <Menu.Item header>
             <span style={{ color: 'red' }}>
-              {gameData.aliases[gameData.seated[gameData.turnIndex]]}
+              {gameData.seated[gameData.turnIndex] === 'disconnected'
+                ? 'Disconnected player'
+                : gameData.aliases[gameData.seated[gameData.turnIndex]] || 'Unknown'}
             </span>{' '}
             &nbsp;playing ...
           </Menu.Item>

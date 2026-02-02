@@ -74,3 +74,23 @@ export function restrictPlay(gameData, seatIndex, detectedHand) {
 export function missingLowCard(gameData, scratchState) {
   return gameData.initial && !scratchState.some(card => card.id === gameData.lowest);
 }
+
+export function getSafeUserName() {
+  const userName = localStorage.getItem('userName');
+  if (typeof userName !== 'string') return '';
+  return userName.slice(0, 50);
+}
+
+export function getSafeColorChoice() {
+  const colorChoice = localStorage.getItem('colorChoice');
+  if (typeof colorChoice !== 'string') return null;
+  if (!/^#[0-9a-fA-F]{6}$/.test(colorChoice)) return null;
+  return colorChoice;
+}
+
+export function getSafeLastKnownSocket() {
+  const lastKnownSocket = localStorage.getItem('lastKnownSocket');
+  if (typeof lastKnownSocket !== 'string') return null;
+  if (lastKnownSocket.length > 100) return null;
+  return lastKnownSocket;
+}

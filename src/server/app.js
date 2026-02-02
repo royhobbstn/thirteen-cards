@@ -15,6 +15,13 @@ import {
   findOrphanedSeat,
   findSeatIndex,
   assignGamePoints,
+  validateTurn,
+  validateOwnsCards,
+  validateInitialPlay,
+  validatePlayBeatsBoard,
+  shouldClearBoard,
+  clearBoardForFreePlay,
+  replaceSocketId,
 } from './server-util.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -86,10 +93,8 @@ io.on('connection', socket => {
     roomData[roomName].lastModified = Date.now();
     roomData[roomName].players.push(socket.id); // officially add new player
 
-    if (lastKnownSocket != null && lastKnownSocket !== socket.id && lastKnownSocket !== 'null') {
-      const room = JSON.stringify(roomData[roomName]);
-      const replaced = room.split(lastKnownSocket).join(socket.id);
-      roomData[roomName] = JSON.parse(replaced);
+    if (lastKnownSocket && lastKnownSocket !== socket.id && lastKnownSocket !== 'null') {
+      replaceSocketId(roomData[roomName], lastKnownSocket, socket.id);
     }
     // add a stat row if needed
     if (!roomData[roomName].stats[socket.id]) {
@@ -218,31 +223,57 @@ io.on('connection', socket => {
 
   socket.on('submitHand', message => {
     roomData[roomName].lastModified = Date.now();
-    roomData[roomName].initial = false;
 
-    // todo :  if initial = true and doesnt contain lowest card
-    // (shouldnt happen unless someone is tampering with calls)
+    // Validate message format
+    if (!message || !Array.isArray(message.body)) {
+      console.log(`Invalid submitHand from ${socket.id}: malformed message`);
+      socket.emit('playError', { message: 'Invalid message format' });
+      return;
+    }
 
-    // todo: same as above, shouldnt happen, but enforce that submitted
-    // cards are > rank than board cards, and are on same play path
-    // ex: Singles, Pairs, etc
-
+    const submittedHand = message.body.map(d => d.id);
+    const seatIndex = findSeatIndex(roomData[roomName], socket.id);
     const detectedHand = getDetectedCards(message.body);
+
+    // Validate it's this player's turn
+    if (!validateTurn(roomData[roomName], socket.id)) {
+      console.log(`Invalid play from ${socket.id}: not their turn`);
+      socket.emit('playError', { message: "It's not your turn" });
+      return;
+    }
+
+    // Validate player owns the submitted cards
+    if (!validateOwnsCards(roomData[roomName], socket.id, submittedHand)) {
+      console.log(`Invalid play from ${socket.id}: doesn't own submitted cards`);
+      socket.emit('playError', { message: "You don't own those cards" });
+      return;
+    }
+
+    // Validate initial play contains lowest card
+    if (!validateInitialPlay(roomData[roomName], submittedHand)) {
+      console.log(`Invalid play from ${socket.id}: initial play missing lowest card`);
+      socket.emit('playError', { message: 'First play must include the lowest card' });
+      return;
+    }
+
+    // Validate play beats the board
+    if (!validatePlayBeatsBoard(roomData[roomName], seatIndex, detectedHand)) {
+      console.log(`Invalid play from ${socket.id}: play doesn't beat board`);
+      socket.emit('playError', { message: "Your play doesn't beat the board" });
+      return;
+    }
+
+    roomData[roomName].initial = false;
 
     // record bombs from this
     if (detectedHand.play === 'Bomb') {
       roomData[roomName].stats[socket.id].bombs += 1;
     }
 
-    const submittedHand = message.body.map(d => d.id);
-
     // populate / sort board
     roomData[roomName].board = [...submittedHand].sort((a, b) => {
       return cardRank[b] - cardRank[a];
     });
-
-    // find which seat message came from
-    const seatIndex = findSeatIndex(roomData[roomName], socket.id);
 
     // populate last play for seat
     roomData[roomName].last[seatIndex] = detectedHand;
@@ -310,15 +341,18 @@ io.on('connection', socket => {
 
   socket.on('passTurn', () => {
     roomData[roomName].lastModified = Date.now();
-    roomData[roomName].turnIndex = findNextPlayersTurn(roomData[roomName]);
 
     // find which seat message came from
     const seatIndex = findSeatIndex(roomData[roomName], socket.id);
 
     roomData[roomName].last[seatIndex] = 'pass';
 
-    // todo, determine if board has been passed around.
-    // if so, clear cards on board and allow next player to play whatever
+    // Check if board should be cleared (all other players have passed)
+    if (shouldClearBoard(roomData[roomName])) {
+      clearBoardForFreePlay(roomData[roomName]);
+    }
+
+    roomData[roomName].turnIndex = findNextPlayersTurn(roomData[roomName]);
 
     sendToEveryone(io, roomData[roomName]);
   });
@@ -396,7 +430,7 @@ io.on('connection', socket => {
 
     roomData[roomName].seated = roomData[roomName].seated.map(seat => {
       if (seat === socket.id) {
-        if (roomData[roomName].stage === 'seating' || roomData[roomName] === 'done') {
+        if (roomData[roomName].stage === 'seating' || roomData[roomName].stage === 'done') {
           return null;
         }
         // for when stage === 'game':

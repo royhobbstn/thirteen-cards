@@ -3,6 +3,7 @@ import { Grid } from 'semantic-ui-react';
 import { Game } from './Game';
 import socketIOClient from 'socket.io-client';
 import TabContainer from './TabContainer';
+import { getSafeUserName, getSafeColorChoice, getSafeLastKnownSocket } from './util';
 
 const Room = ({
   match,
@@ -21,13 +22,13 @@ const Room = ({
     socketRef.current = socketIOClient({
       query: {
         roomName,
-        userName: localStorage.getItem('userName'),
-        colorChoice: localStorage.getItem('colorChoice'),
+        userName: getSafeUserName(),
+        colorChoice: getSafeColorChoice(),
       },
     });
     socketRef.current.on('connect', function () {
       updateSocketReady(true);
-      const lastKnownSocket = localStorage.getItem('lastKnownSocket');
+      const lastKnownSocket = getSafeLastKnownSocket();
       localStorage.setItem('lastKnownSocket', socketRef.current.id);
       // here send message to server to tell it to announce connection to everyone and send updated game state.
       socketRef.current.emit('announceConnection', { lastKnownSocket });

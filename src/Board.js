@@ -4,6 +4,28 @@ import { SeatingStageBoard } from './SeatingStageBoard';
 import { GameStageBoard } from './GameStageBoard';
 
 export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
+  const prevBoardRef = React.useRef([]);
+  const [animatingCards, setAnimatingCards] = React.useState(new Set());
+
+  React.useEffect(() => {
+    const prevBoard = prevBoardRef.current;
+    const currentBoard = gameData.board;
+
+    // Find new cards that weren't in the previous board
+    const newCards = currentBoard.filter(card => !prevBoard.includes(card));
+
+    if (newCards.length > 0) {
+      setAnimatingCards(new Set(newCards));
+      // Clear animation state after animation completes
+      const timeout = setTimeout(() => {
+        setAnimatingCards(new Set());
+      }, 350 + newCards.length * 50); // base duration + stagger
+      prevBoardRef.current = currentBoard;
+      return () => clearTimeout(timeout);
+    }
+
+    prevBoardRef.current = currentBoard;
+  }, [gameData.board]);
   let boardHeight = windowDimensions.height - 300;
   if (boardHeight < 250) {
     boardHeight = 250;
@@ -79,8 +101,10 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
         }}
       >
         {gameData.board.map((card, index) => {
+          const shouldAnimate = animatingCards.has(card);
           return (
             <div
+              className={shouldAnimate ? 'board-card' : ''}
               key={card}
               style={{
                 width: '64px',
@@ -90,11 +114,11 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
                 top: cardPos + 'px',
                 left: cardLeft + cardWidth * index + 'px',
                 display: 'inline-block',
+                animationDelay: shouldAnimate ? `${index * 0.05}s` : undefined,
               }}
             >
               <img
                 className="box-shadow"
-                key={card}
                 style={{
                   width: '64px',
                   height: 'auto',
@@ -134,7 +158,6 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
                   socketRef={socketRef}
                 />
               ) : null}
-              {/* <p>{gameData.cards[seatIndex] ? gameData.cards[seatIndex].length : '---'}</p> */}
             </div>
           );
         })}
