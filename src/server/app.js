@@ -22,7 +22,15 @@ import {
   shouldClearBoard,
   clearBoardForFreePlay,
   replaceSocketId,
+  isAiSeat,
+  getAiPersona,
 } from './server-util.js';
+import {
+  processAiTurn,
+  AI_PERSONAS,
+  AI_DISPLAY_NAMES,
+  AI_COLORS,
+} from './ai/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -176,6 +184,98 @@ io.on('connection', socket => {
     sendToEveryone(io, roomData[roomName]);
   });
 
+  socket.on('addAi', message => {
+    const { seatIndex, persona } = message;
+    roomData[roomName].lastModified = Date.now();
+
+    // Validate seat index
+    if (seatIndex < 0 || seatIndex > 3) {
+      console.log(`Invalid addAi: invalid seat index ${seatIndex}`);
+      return;
+    }
+
+    // Validate persona
+    if (!AI_PERSONAS.includes(persona)) {
+      console.log(`Invalid addAi: unknown persona ${persona}`);
+      return;
+    }
+
+    // Can only add AI during seating stage
+    if (roomData[roomName].stage !== 'seating') {
+      console.log('Invalid addAi: game already started');
+      return;
+    }
+
+    // Seat must be empty
+    if (roomData[roomName].seated[seatIndex] !== null) {
+      console.log(`Invalid addAi: seat ${seatIndex} is occupied`);
+      return;
+    }
+
+    // Add AI to seat
+    const aiSeatId = `--${persona}`;
+    roomData[roomName].seated[seatIndex] = aiSeatId;
+    roomData[roomName].aliases[aiSeatId] = AI_DISPLAY_NAMES[persona];
+    roomData[roomName].colors[aiSeatId] = AI_COLORS[persona];
+
+    // Initialize AI stats if needed
+    if (!roomData[roomName].stats[aiSeatId]) {
+      roomData[roomName].stats[aiSeatId] = {
+        points: 0,
+        playerGames: 0,
+        games: 0,
+        first: 0,
+        second: 0,
+        third: 0,
+        fourth: 0,
+        bombs: 0,
+      };
+    }
+
+    io.in(roomName).emit(CHAT, {
+      body: `${AI_DISPLAY_NAMES[persona]} (AI) has joined the table`,
+      senderId: '',
+    });
+
+    sendToEveryone(io, roomData[roomName]);
+  });
+
+  socket.on('removeAi', message => {
+    const { seatIndex } = message;
+    roomData[roomName].lastModified = Date.now();
+
+    // Validate seat index
+    if (seatIndex < 0 || seatIndex > 3) {
+      console.log(`Invalid removeAi: invalid seat index ${seatIndex}`);
+      return;
+    }
+
+    // Can only remove AI during seating stage
+    if (roomData[roomName].stage !== 'seating') {
+      console.log('Invalid removeAi: game already started');
+      return;
+    }
+
+    // Seat must have an AI
+    const seatId = roomData[roomName].seated[seatIndex];
+    if (!isAiSeat(seatId)) {
+      console.log(`Invalid removeAi: seat ${seatIndex} does not have AI`);
+      return;
+    }
+
+    const persona = getAiPersona(seatId);
+
+    // Clear the seat
+    roomData[roomName].seated[seatIndex] = null;
+
+    io.in(roomName).emit(CHAT, {
+      body: `${AI_DISPLAY_NAMES[persona]} (AI) has left the table`,
+      senderId: '',
+    });
+
+    sendToEveryone(io, roomData[roomName]);
+  });
+
   socket.on('setGameStatus', message => {
     const updatedStatus = message.body;
     roomData[roomName].lastModified = Date.now();
@@ -219,6 +319,11 @@ io.on('connection', socket => {
     // actually set status
     roomData[roomName].stage = updatedStatus;
     sendToEveryone(io, roomData[roomName]);
+
+    // Trigger AI turn if game just started and first turn is AI
+    if (updatedStatus === 'game') {
+      processAiTurn(roomData[roomName], sendToEveryone, io, roomName);
+    }
   });
 
   socket.on('submitHand', message => {
@@ -311,20 +416,22 @@ io.on('connection', socket => {
     if (orphanedSeatCount === 1) {
       roomData[roomName].rank[orphanedSeatIndex] = highestAvailableRank;
       const orphanSocket = roomData[roomName].seated[orphanedSeatIndex];
-      roomData[roomName].stats[orphanSocket].points += assignGamePoints(
-        roomData[roomName],
-        highestAvailableRank,
-      );
-      roomData[roomName].stats[orphanSocket].playerGames += roomData[roomName].startingPlayers;
-      roomData[roomName].stats[orphanSocket].games += 1;
-      if (highestAvailableRank === 1) {
-        roomData[roomName].stats[orphanSocket].first += 1;
-      } else if (highestAvailableRank === 2) {
-        roomData[roomName].stats[orphanSocket].second += 1;
-      } else if (highestAvailableRank === 3) {
-        roomData[roomName].stats[orphanSocket].third += 1;
-      } else if (highestAvailableRank === 4) {
-        roomData[roomName].stats[orphanSocket].fourth += 1;
+      if (roomData[roomName].stats[orphanSocket]) {
+        roomData[roomName].stats[orphanSocket].points += assignGamePoints(
+          roomData[roomName],
+          highestAvailableRank,
+        );
+        roomData[roomName].stats[orphanSocket].playerGames += roomData[roomName].startingPlayers;
+        roomData[roomName].stats[orphanSocket].games += 1;
+        if (highestAvailableRank === 1) {
+          roomData[roomName].stats[orphanSocket].first += 1;
+        } else if (highestAvailableRank === 2) {
+          roomData[roomName].stats[orphanSocket].second += 1;
+        } else if (highestAvailableRank === 3) {
+          roomData[roomName].stats[orphanSocket].third += 1;
+        } else if (highestAvailableRank === 4) {
+          roomData[roomName].stats[orphanSocket].fourth += 1;
+        }
       }
     }
 
@@ -337,6 +444,11 @@ io.on('connection', socket => {
     }
 
     sendToEveryone(io, roomData[roomName]);
+
+    // Trigger AI turn if next player is AI
+    if (remainingPlayers) {
+      processAiTurn(roomData[roomName], sendToEveryone, io, roomName);
+    }
   });
 
   socket.on('passTurn', () => {
@@ -355,6 +467,9 @@ io.on('connection', socket => {
     roomData[roomName].turnIndex = findNextPlayersTurn(roomData[roomName]);
 
     sendToEveryone(io, roomData[roomName]);
+
+    // Trigger AI turn if next player is AI
+    processAiTurn(roomData[roomName], sendToEveryone, io, roomName);
   });
 
   socket.on('forfeit', () => {
@@ -391,20 +506,22 @@ io.on('connection', socket => {
       roomData[roomName].rank[orphanedSeatIndex] = nextHighestAvailableRank;
       // find socketId of orphan
       const orphanSocket = roomData[roomName].seated[orphanedSeatIndex];
-      roomData[roomName].stats[orphanSocket].points += assignGamePoints(
-        roomData[roomName],
-        nextHighestAvailableRank,
-      );
-      roomData[roomName].stats[orphanSocket].playerGames += roomData[roomName].startingPlayers;
-      roomData[roomName].stats[orphanSocket].games += 1;
-      if (nextHighestAvailableRank === 1) {
-        roomData[roomName].stats[orphanSocket].first += 1;
-      } else if (nextHighestAvailableRank === 2) {
-        roomData[roomName].stats[orphanSocket].second += 1;
-      } else if (nextHighestAvailableRank === 3) {
-        roomData[roomName].stats[orphanSocket].third += 1;
-      } else if (nextHighestAvailableRank === 4) {
-        roomData[roomName].stats[orphanSocket].fourth += 1;
+      if (roomData[roomName].stats[orphanSocket]) {
+        roomData[roomName].stats[orphanSocket].points += assignGamePoints(
+          roomData[roomName],
+          nextHighestAvailableRank,
+        );
+        roomData[roomName].stats[orphanSocket].playerGames += roomData[roomName].startingPlayers;
+        roomData[roomName].stats[orphanSocket].games += 1;
+        if (nextHighestAvailableRank === 1) {
+          roomData[roomName].stats[orphanSocket].first += 1;
+        } else if (nextHighestAvailableRank === 2) {
+          roomData[roomName].stats[orphanSocket].second += 1;
+        } else if (nextHighestAvailableRank === 3) {
+          roomData[roomName].stats[orphanSocket].third += 1;
+        } else if (nextHighestAvailableRank === 4) {
+          roomData[roomName].stats[orphanSocket].fourth += 1;
+        }
       }
     }
 
@@ -417,6 +534,11 @@ io.on('connection', socket => {
     }
 
     sendToEveryone(io, roomData[roomName]);
+
+    // Trigger AI turn if next player is AI
+    if (remainingPlayers) {
+      processAiTurn(roomData[roomName], sendToEveryone, io, roomName);
+    }
   });
 
   /* end game specific messages */
@@ -456,6 +578,9 @@ server.listen(port, () => console.log(`Listening on port ${port}`));
 function sendToEveryone(io, data) {
   // obscure cards so they cant peek at network tab traffic
   for (let player of data.players) {
+    // Skip AI players (they have no socket)
+    if (isAiSeat(player)) continue;
+
     // copy this structure or else we're in a world of trouble
     const copy = JSON.parse(JSON.stringify(data));
 

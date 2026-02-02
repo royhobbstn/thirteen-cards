@@ -56,7 +56,8 @@ export function restrictPlay(gameData, seatIndex, detectedHand) {
     playTypeValidation = true;
   }
 
-  if (lastPlay.play === 'Straight' && detectedHand.play === 'Straight Flush') {
+  // Straight Flush can beat any Straight (e.g., "5 Card Straight") or Flush
+  if (lastPlay.play.includes('Straight') && !lastPlay.play.includes('Flush') && detectedHand.play === 'Straight Flush') {
     playTypeValidation = true;
   }
 
@@ -94,3 +95,32 @@ export function getSafeLastKnownSocket() {
   if (lastKnownSocket.length > 100) return null;
   return lastKnownSocket;
 }
+
+// AI Helpers
+
+/**
+ * Check if a seat ID represents an AI player
+ * @param {string} seatId - Seat ID from gameData.seated[]
+ * @returns {boolean}
+ */
+export function isAiSeat(seatId) {
+  return typeof seatId === 'string' && seatId.startsWith('--');
+}
+
+/**
+ * Get the AI persona from a seat ID
+ * @param {string} seatId - Seat ID like '--marcus'
+ * @returns {string|null} Persona name like 'marcus'
+ */
+export function getAiPersona(seatId) {
+  if (!isAiSeat(seatId)) return null;
+  return seatId.slice(2);
+}
+
+export const AI_PERSONAS = ['marcus', 'eddie', 'grandmaliu'];
+
+export const AI_DISPLAY_NAMES = {
+  marcus: 'Marcus (Balanced)',
+  eddie: 'Eddie (Aggressive)',
+  grandmaliu: 'Grandma Liu (Conservative)',
+};
