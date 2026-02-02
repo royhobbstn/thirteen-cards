@@ -49,7 +49,7 @@ const Room = ({
 
   return socketReady ? (
     <Grid>
-      <Grid.Column width={10} style={{ paddingRight: '5px' }}>
+      <Grid.Column width={11} style={{ paddingRight: '5px' }}>
         <Game
           socketRef={socketRef}
           windowDimensions={windowDimensions}
@@ -57,7 +57,7 @@ const Room = ({
           sendMessage={sendMessage}
         />
       </Grid.Column>
-      <Grid.Column width={6} style={{ paddingLeft: '5px' }}>
+      <Grid.Column width={5} style={{ paddingLeft: '5px' }}>
         <TabContainer socketRef={socketRef} gameData={gameData} />
       </Grid.Column>
     </Grid>

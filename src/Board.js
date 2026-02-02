@@ -130,18 +130,18 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
       prevLastForPassRef.current = [null, null, null, null];
     }
   }, [gameData.stage]);
-  let boardHeight = windowDimensions.height - 300;
+  let boardHeight = windowDimensions.height - 260;
   if (boardHeight < 250) {
     boardHeight = 250;
   }
 
-  // pane for table about 62.5% of total width
-  let boardWidth = windowDimensions.width * 0.62;
+  // pane for table about 68.75% of total width
+  let boardWidth = windowDimensions.width * 0.68;
 
   const iconWidth = 78;
   const iconHeight = 50;
-  const cardHeight = 90;
-  const rawCardWidth = 64;
+  const cardHeight = 120;
+  const rawCardWidth = 85;
   const margins = 50;
 
   const potentialCardArea = boardWidth - 2 * iconWidth - margins - rawCardWidth;
@@ -216,7 +216,7 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
               className={animationClass}
               key={card}
               style={{
-                width: '64px',
+                width: '85px',
                 height: 'auto',
                 margin: '2px',
                 position: 'absolute',
@@ -229,7 +229,7 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
               <img
                 className="box-shadow"
                 style={{
-                  width: '64px',
+                  width: '85px',
                   height: 'auto',
                   display: 'inline-block',
                 }}

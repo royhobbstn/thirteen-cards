@@ -86,27 +86,82 @@ table.ui.table.stats-table th {
 @media (hover: hover) and (pointer: fine) {
   .card-interactive:hover {
     filter: brightness(1.1);
-    z-index: 10;
+    z-index: 10; /* Selected cards use 15+ inline, so they stay on top */
   }
 
   .card-fan:hover {
-    box-shadow: 4px 6px 12px rgba(0, 0, 0, 0.3);
-  }
-
-  .card-staged:hover {
-    transform: translateY(-8px) scale(1.05);
     box-shadow: 4px 6px 12px rgba(0, 0, 0, 0.3);
   }
 }
 
 /* Card in main hand with fan styling */
 .card-fan {
-  transition: transform 0.2s ease-out, margin-top 0.2s ease-out, box-shadow 0.2s ease-out;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
 }
 
-/* Card in staged area (no fan) */
-.card-staged {
-  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+/* Selected card visual indicator */
+.card-selected {
+  box-shadow: 0 6px 12px rgba(0,0,0,0.4), 0 0 8px rgba(33,186,69,0.6) !important;
+  outline: 2px solid #21ba45;
+  outline-offset: -2px;
+}
+
+/* Touch feedback for card taps */
+.card-interactive:active {
+  filter: brightness(0.95);
+}
+
+/* Game action buttons */
+.game-btn {
+  min-width: 80px;
+  padding: 10px 16px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+  font-family: inherit;
+}
+
+.game-btn-play {
+  background: linear-gradient(135deg, #4CAF50, #2E7D32);
+  color: white;
+  border: 2px solid #1B5E20;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+}
+
+.game-btn-play:hover:not(:disabled) {
+  background: linear-gradient(135deg, #66BB6A, #43A047);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0,0,0,0.4);
+}
+
+.game-btn-play:disabled {
+  background: #9E9E9E;
+  border-color: #757575;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.game-btn-pass {
+  background: linear-gradient(135deg, #607D8B, #455A64);
+  color: white;
+  border: 2px solid #37474F;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+}
+
+.game-btn-pass:hover:not(:disabled) {
+  background: linear-gradient(135deg, #78909C, #546E7A);
+  transform: translateY(-2px);
+}
+
+.game-btn-pass:disabled {
+  background: #9E9E9E;
+  border-color: #757575;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 /* Board card entry animations - directional based on seat position */
@@ -298,8 +353,7 @@ table.ui.table.stats-table th {
     transform: none;
   }
 
-  .card-fan,
-  .card-staged {
+  .card-fan {
     transition: none;
   }
 
@@ -332,6 +386,10 @@ table.ui.table.stats-table th {
   .cooldown-overlay {
     animation: none;
     opacity: 0.15;
+  }
+
+  .game-btn:hover:not(:disabled) {
+    transform: none;
   }
 }
 
