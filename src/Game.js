@@ -1,9 +1,21 @@
 import * as React from 'react';
 import { CardSpace } from './CardSpace';
 import { Board } from './Board';
+import { GameOverModal } from './GameOverModal';
 import { getSeatIndex } from './util.js';
 
 export function Game({ socketRef, windowDimensions, gameData, sendMessage }) {
+  const [showModal, setShowModal] = React.useState(false);
+
+  // Show modal when game ends, hide when stage changes away from 'done'
+  React.useEffect(() => {
+    if (gameData?.stage === 'done') {
+      setShowModal(true);
+    } else {
+      setShowModal(false);
+    }
+  }, [gameData?.stage]);
+
   if (!gameData) {
     return null;
   }
@@ -29,6 +41,15 @@ export function Game({ socketRef, windowDimensions, gameData, sendMessage }) {
         sendMessage={sendMessage}
         windowDimensions={windowDimensions}
       />
+
+      {showModal && (
+        <GameOverModal
+          gameData={gameData}
+          socketRef={socketRef}
+          sendMessage={sendMessage}
+          onClose={() => setShowModal(false)}
+        />
+      )}
     </div>
   );
 }

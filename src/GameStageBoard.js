@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, Icon } from 'semantic-ui-react';
+import { Button, Icon, Label } from 'semantic-ui-react';
 import { isAiSeat } from './util';
 
 export function GameStageBoard({ gameData, sendMessage, socketRef, seatIndex }) {
@@ -23,21 +23,21 @@ export function GameStageBoard({ gameData, sendMessage, socketRef, seatIndex }) 
 
       {/* AI player */}
       {isAi && (
-        <Button animated="fade">
-          <Button.Content hidden>{gameData.cards[seatIndex]?.length ?? 0}</Button.Content>
-          <Button.Content visible>
-            <Icon name="robot" size="big" color="blue" />
-          </Button.Content>
+        <Button>
+          <Icon name="android" size="big" color="blue" />
+          <Label circular color="grey" size="mini" floating>
+            {gameData.cards[seatIndex]?.length ?? 0}
+          </Label>
         </Button>
       )}
 
       {/* Other human player */}
       {isOccupied && !isSelf && !isAi && (
-        <Button animated="fade">
-          <Button.Content hidden>{gameData.cards[seatIndex]?.length ?? 0}</Button.Content>
-          <Button.Content visible>
-            <Icon name="user" size="big" color="black" />
-          </Button.Content>
+        <Button>
+          <Icon name="user" size="big" color="black" />
+          <Label circular color="grey" size="mini" floating>
+            {gameData.cards[seatIndex]?.length ?? 0}
+          </Label>
         </Button>
       )}
 

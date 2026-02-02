@@ -140,4 +140,121 @@ table.ui.table.stats-table th {
   .card-staged {
     transition: none;
   }
+
+  .trophy-icon,
+  .winner-star {
+    animation: none;
+  }
+}
+
+/* Game Over Modal Styles */
+.game-over-modal .game-over-header {
+  text-align: center;
+  background: linear-gradient(135deg, #ffd700 0%, #ffb800 100%);
+  color: #333;
+  padding: 1.5rem !important;
+}
+
+.game-over-modal .trophy-icon {
+  color: #ffd700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  animation: trophyPulse 2s ease-in-out infinite;
+}
+
+@keyframes trophyPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.game-over-modal .winner-announcement {
+  text-align: center;
+  padding: 1.5rem 0;
+  font-size: 1.4rem;
+}
+
+.game-over-modal .winner-star {
+  color: #ffd700;
+  margin-right: 0.5rem;
+  animation: starSpin 3s linear infinite;
+}
+
+@keyframes starSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.game-over-modal .winner-name {
+  color: #b8860b;
+  font-weight: bold;
+  font-size: 1.6rem;
+}
+
+.game-over-modal .winner-label {
+  color: #333;
+}
+
+.game-over-modal .placements-list {
+  margin: 1rem 0 !important;
+}
+
+.game-over-modal .placement-item {
+  padding: 0.75rem 1rem !important;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.game-over-modal .placement-item.is-winner {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 184, 0, 0.2) 100%);
+  border-left: 4px solid #ffd700;
+}
+
+.game-over-modal .placement-item.is-player {
+  background: rgba(33, 133, 208, 0.1);
+  border-left: 4px solid #2185d0;
+}
+
+.game-over-modal .placement-item.is-winner.is-player {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(33, 133, 208, 0.2) 100%);
+  border-left: 4px solid #ffd700;
+}
+
+.game-over-modal .placement-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.game-over-modal .placement-rank {
+  font-weight: bold;
+  min-width: 2.5rem;
+  color: #666;
+}
+
+.game-over-modal .placement-item.is-winner .placement-rank {
+  color: #b8860b;
+}
+
+.game-over-modal .placement-alias {
+  flex: 1;
+  font-weight: 500;
+}
+
+.game-over-modal .placement-points {
+  color: #21ba45;
+  font-weight: bold;
+}
+
+.game-over-modal .personal-result {
+  text-align: center;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  background: rgba(33, 133, 208, 0.1);
+  border-radius: 6px;
+  font-size: 1.1rem;
+}
+
+/* Opponent card count badge */
+.active-turn .ui.button > .ui.floating.label,
+.active-turn-self .ui.button > .ui.floating.label {
+  z-index: 1; /* Keep badge visible above glow animation */
 }

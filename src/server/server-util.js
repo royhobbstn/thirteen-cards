@@ -69,26 +69,8 @@ export function resetGame(room, sendToEveryone, io) {
   if (room.stage === 'game') {
     room.stage = 'done';
     room.cards = [null, null, null, null];
-    setTimeout(() => {
-      // Guard against unexpected state changes during timeout
-      if (room.stage !== 'done') {
-        return;
-      }
-      // reset
-      room.stage = 'seating';
-      room.rank = [null, null, null, null];
-      room.cards = [null, null, null, null];
-      room.submitted = [];
-      room.last = [null, null, null, null];
-      room.initial = true;
-      room.lowest = null;
-      room.turnIndex = 0;
-      room.board = [];
-      room.gameId = 0;
-      // Clean up disconnected seats
-      room.seated = room.seated.map(seat => (seat === 'disconnected' ? null : seat));
-      sendToEveryone(io, room);
-    }, 5000);
+    // Game stays in 'done' state until player triggers "Play Again"
+    // Reset logic is handled in setGameStatus when transitioning from 'done' to 'seating'
   }
 }
 

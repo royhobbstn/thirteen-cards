@@ -30,7 +30,7 @@ export function SeatingStageBoard({ gameData, sendMessage, socketRef, seatIndex 
             button
             className="icon"
             floating
-            trigger={<Icon name="robot" color="blue" />}
+            trigger={<Icon name="android" color="blue" />}
             options={aiOptions}
             onChange={(e, { value }) => sendMessage('addAi', { seatIndex, persona: value })}
           />
@@ -42,7 +42,7 @@ export function SeatingStageBoard({ gameData, sendMessage, socketRef, seatIndex 
         <Button animated="fade" onClick={() => sendMessage('removeAi', { seatIndex })}>
           <Button.Content hidden>Remove</Button.Content>
           <Button.Content visible>
-            <Icon name="robot" size="big" color="blue" />
+            <Icon name="android" size="big" color="blue" />
           </Button.Content>
         </Button>
       )}

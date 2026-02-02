@@ -185,7 +185,7 @@ io.on('connection', socket => {
   });
 
   socket.on('addAi', message => {
-    const { seatIndex, persona } = message;
+    const { seatIndex, persona } = message.body;
     roomData[roomName].lastModified = Date.now();
 
     // Validate seat index
@@ -241,7 +241,7 @@ io.on('connection', socket => {
   });
 
   socket.on('removeAi', message => {
-    const { seatIndex } = message;
+    const { seatIndex } = message.body;
     roomData[roomName].lastModified = Date.now();
 
     // Validate seat index
@@ -279,6 +279,26 @@ io.on('connection', socket => {
   socket.on('setGameStatus', message => {
     const updatedStatus = message.body;
     roomData[roomName].lastModified = Date.now();
+
+    // Handle "Play Again" transition from 'done' to 'seating'
+    if (updatedStatus === 'seating' && roomData[roomName].stage === 'done') {
+      roomData[roomName].stage = 'seating';
+      roomData[roomName].rank = [null, null, null, null];
+      roomData[roomName].cards = [null, null, null, null];
+      roomData[roomName].submitted = [];
+      roomData[roomName].last = [null, null, null, null];
+      roomData[roomName].initial = true;
+      roomData[roomName].lowest = null;
+      roomData[roomName].turnIndex = 0;
+      roomData[roomName].board = [];
+      roomData[roomName].gameId = 0;
+      // Clean up disconnected seats
+      roomData[roomName].seated = roomData[roomName].seated.map(seat =>
+        seat === 'disconnected' ? null : seat,
+      );
+      sendToEveryone(io, roomData[roomName]);
+      return;
+    }
 
     if (updatedStatus === 'game') {
       roomData[roomName].gameId = uuid();
