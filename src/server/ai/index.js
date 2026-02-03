@@ -6,10 +6,12 @@ import {
   findHighestAvailableRank,
   findOrphanedSeat,
   assignGamePoints,
+  assignRankToPlayer,
   countRemainingPlayers,
   resetGame,
   clearBoardForFreePlay,
   shouldClearBoard,
+  findNextPlayersTurn,
 } from '../server-util.js';
 import {
   logCardPlay,
@@ -167,18 +169,7 @@ function executeAiPlay(room, seatIndex, play, sendToEveryone, io, roomName) {
   // Check for win condition
   if (room.cards[seatIndex].length === 0) {
     const assignRank = findLowestAvailableRank(room);
-    room.rank[seatIndex] = assignRank;
-
-    // Update AI stats
-    if (room.stats[seatId]) {
-      room.stats[seatId].points += assignGamePoints(room, assignRank);
-      room.stats[seatId].playerGames += room.startingPlayers;
-      room.stats[seatId].games += 1;
-      if (assignRank === 1) room.stats[seatId].first += 1;
-      else if (assignRank === 2) room.stats[seatId].second += 1;
-      else if (assignRank === 3) room.stats[seatId].third += 1;
-      else if (assignRank === 4) room.stats[seatId].fourth += 1;
-    }
+    assignRankToPlayer(room, seatIndex, assignRank);
     // Log player finish
     io.in(roomName).emit(CHAT, logFinish(playerName, assignRank));
   }
@@ -188,19 +179,11 @@ function executeAiPlay(room, seatIndex, play, sendToEveryone, io, roomName) {
   const [orphanedSeatCount, orphanedSeatIndex] = findOrphanedSeat(room);
 
   if (orphanedSeatCount === 1) {
-    room.rank[orphanedSeatIndex] = highestAvailableRank;
+    assignRankToPlayer(room, orphanedSeatIndex, highestAvailableRank);
+    // Log orphan finish (only if not disconnected)
     const orphanSocket = room.seated[orphanedSeatIndex];
-
-    if (room.stats[orphanSocket]) {
-      room.stats[orphanSocket].points += assignGamePoints(room, highestAvailableRank);
-      room.stats[orphanSocket].playerGames += room.startingPlayers;
-      room.stats[orphanSocket].games += 1;
-      if (highestAvailableRank === 1) room.stats[orphanSocket].first += 1;
-      else if (highestAvailableRank === 2) room.stats[orphanSocket].second += 1;
-      else if (highestAvailableRank === 3) room.stats[orphanSocket].third += 1;
-      else if (highestAvailableRank === 4) room.stats[orphanSocket].fourth += 1;
-      // Log orphan finish (only if not disconnected)
-      const orphanName = room.aliases[orphanSocket];
+    const orphanName = room.aliases[orphanSocket];
+    if (orphanName) {
       io.in(roomName).emit(CHAT, logFinish(orphanName, highestAvailableRank));
     }
   }
@@ -222,31 +205,4 @@ function executeAiPlay(room, seatIndex, play, sendToEveryone, io, roomName) {
 
   // Process next AI turn if needed
   processAiTurn(room, sendToEveryone, io, roomName);
-}
-
-/**
- * Find next player's turn (copied from app.js to avoid circular import)
- */
-function findNextPlayersTurn(room) {
-  let nextPlayer = null;
-
-  for (let i = 1; i <= 4; i++) {
-    let seatIndex = room.turnIndex + i;
-    if (seatIndex > 3) {
-      seatIndex = seatIndex - 4;
-    }
-    if (room.seated[seatIndex]) {
-      if (room.rank[seatIndex]) {
-        continue;
-      }
-      nextPlayer = seatIndex;
-      break;
-    }
-  }
-
-  if (nextPlayer === null) {
-    throw new Error('could not determine next player');
-  }
-
-  return nextPlayer;
 }

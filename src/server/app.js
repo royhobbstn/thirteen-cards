@@ -15,6 +15,7 @@ import {
   findOrphanedSeat,
   findSeatIndex,
   assignGamePoints,
+  assignRankToPlayer,
   validateTurn,
   validateOwnsCards,
   validateInitialPlay,
@@ -24,6 +25,7 @@ import {
   replaceSocketId,
   isAiSeat,
   getAiPersona,
+  findNextPlayersTurn,
 } from './server-util.js';
 import {
   processAiTurn,
@@ -429,22 +431,7 @@ io.on('connection', socket => {
     // check for win condition
     if (roomData[roomName].cards[seatIndex].length === 0) {
       const assignRank = findLowestAvailableRank(roomData[roomName]);
-      roomData[roomName].rank[seatIndex] = assignRank;
-      roomData[roomName].stats[socket.id].points += assignGamePoints(
-        roomData[roomName],
-        assignRank,
-      );
-      roomData[roomName].stats[socket.id].playerGames += roomData[roomName].startingPlayers;
-      roomData[roomName].stats[socket.id].games += 1;
-      if (assignRank === 1) {
-        roomData[roomName].stats[socket.id].first += 1;
-      } else if (assignRank === 2) {
-        roomData[roomName].stats[socket.id].second += 1;
-      } else if (assignRank === 3) {
-        roomData[roomName].stats[socket.id].third += 1;
-      } else if (assignRank === 4) {
-        roomData[roomName].stats[socket.id].fourth += 1;
-      }
+      assignRankToPlayer(roomData[roomName], seatIndex, assignRank);
       // Log player finish
       io.in(roomName).emit(CHAT, logFinish(playerName, assignRank));
     }
@@ -454,26 +441,11 @@ io.on('connection', socket => {
     const [orphanedSeatCount, orphanedSeatIndex] = findOrphanedSeat(roomData[roomName]);
 
     if (orphanedSeatCount === 1) {
-      roomData[roomName].rank[orphanedSeatIndex] = highestAvailableRank;
+      assignRankToPlayer(roomData[roomName], orphanedSeatIndex, highestAvailableRank);
+      // Log orphan finish (only if not disconnected)
       const orphanSocket = roomData[roomName].seated[orphanedSeatIndex];
-      if (roomData[roomName].stats[orphanSocket]) {
-        roomData[roomName].stats[orphanSocket].points += assignGamePoints(
-          roomData[roomName],
-          highestAvailableRank,
-        );
-        roomData[roomName].stats[orphanSocket].playerGames += roomData[roomName].startingPlayers;
-        roomData[roomName].stats[orphanSocket].games += 1;
-        if (highestAvailableRank === 1) {
-          roomData[roomName].stats[orphanSocket].first += 1;
-        } else if (highestAvailableRank === 2) {
-          roomData[roomName].stats[orphanSocket].second += 1;
-        } else if (highestAvailableRank === 3) {
-          roomData[roomName].stats[orphanSocket].third += 1;
-        } else if (highestAvailableRank === 4) {
-          roomData[roomName].stats[orphanSocket].fourth += 1;
-        }
-        // Log orphan finish (only if not disconnected)
-        const orphanName = roomData[roomName].aliases[orphanSocket];
+      const orphanName = roomData[roomName].aliases[orphanSocket];
+      if (orphanName) {
         io.in(roomName).emit(CHAT, logFinish(orphanName, highestAvailableRank));
       }
     }
@@ -534,49 +506,19 @@ io.on('connection', socket => {
     // find next available rank
     const highestAvailableRank = findHighestAvailableRank(roomData[roomName]);
     // assign highestAvailableRank to forfeiter
-    roomData[roomName].rank[seatIndex] = highestAvailableRank;
-    roomData[roomName].stats[socket.id].points += assignGamePoints(
-      roomData[roomName],
-      highestAvailableRank,
-    );
-    roomData[roomName].stats[socket.id].playerGames += roomData[roomName].startingPlayers;
-    roomData[roomName].stats[socket.id].games += 1;
-    if (highestAvailableRank === 1) {
-      roomData[roomName].stats[socket.id].first += 1;
-    } else if (highestAvailableRank === 2) {
-      roomData[roomName].stats[socket.id].second += 1;
-    } else if (highestAvailableRank === 3) {
-      roomData[roomName].stats[socket.id].third += 1;
-    } else if (highestAvailableRank === 4) {
-      roomData[roomName].stats[socket.id].fourth += 1;
-    }
+    assignRankToPlayer(roomData[roomName], seatIndex, highestAvailableRank);
+
     // see if people are still in room
     const nextHighestAvailableRank = findHighestAvailableRank(roomData[roomName]);
 
     const [orphanedSeatCount, orphanedSeatIndex] = findOrphanedSeat(roomData[roomName]);
 
     if (orphanedSeatCount === 1) {
-      roomData[roomName].rank[orphanedSeatIndex] = nextHighestAvailableRank;
-      // find socketId of orphan
+      assignRankToPlayer(roomData[roomName], orphanedSeatIndex, nextHighestAvailableRank);
+      // Log orphan finish (only if not disconnected)
       const orphanSocket = roomData[roomName].seated[orphanedSeatIndex];
-      if (roomData[roomName].stats[orphanSocket]) {
-        roomData[roomName].stats[orphanSocket].points += assignGamePoints(
-          roomData[roomName],
-          nextHighestAvailableRank,
-        );
-        roomData[roomName].stats[orphanSocket].playerGames += roomData[roomName].startingPlayers;
-        roomData[roomName].stats[orphanSocket].games += 1;
-        if (nextHighestAvailableRank === 1) {
-          roomData[roomName].stats[orphanSocket].first += 1;
-        } else if (nextHighestAvailableRank === 2) {
-          roomData[roomName].stats[orphanSocket].second += 1;
-        } else if (nextHighestAvailableRank === 3) {
-          roomData[roomName].stats[orphanSocket].third += 1;
-        } else if (nextHighestAvailableRank === 4) {
-          roomData[roomName].stats[orphanSocket].fourth += 1;
-        }
-        // Log orphan finish (only if not disconnected)
-        const orphanName = roomData[roomName].aliases[orphanSocket];
+      const orphanName = roomData[roomName].aliases[orphanSocket];
+      if (orphanName) {
         io.in(roomName).emit(CHAT, logFinish(orphanName, nextHighestAvailableRank));
       }
     }
@@ -601,6 +543,12 @@ io.on('connection', socket => {
 
   // Leave the room if the user closes the socket
   socket.on('disconnect', () => {
+    // Guard: room may have been cleaned up already
+    if (!roomData[roomName]) {
+      console.log(`Client ${socket.id} disconnected (room ${roomName} no longer exists)`);
+      return;
+    }
+
     roomData[roomName].lastModified = Date.now();
 
     console.log(`Client ${socket.id} disconnected`);
@@ -664,32 +612,4 @@ function cleanUpRoomData() {
       }
     }
   }, 300000);
-}
-
-function findNextPlayersTurn(room) {
-  let nextPlayer = null;
-
-  // find next players turn
-  for (let i = 1; i <= 4; i++) {
-    let seatIndex = room.turnIndex + i;
-    if (seatIndex > 3) {
-      seatIndex = seatIndex - 4;
-    }
-    // if theres someone sitting here, it's a valid seat
-    if (room.seated[seatIndex]) {
-      // if this person already finished and has a rank, skip
-      if (room.rank[seatIndex]) {
-        continue;
-      }
-
-      nextPlayer = seatIndex;
-      break;
-    }
-  }
-
-  if (nextPlayer === null) {
-    throw new Error('could not determine next player', { data: JSON.parse(JSON.stringify(room)) });
-  }
-
-  return nextPlayer;
 }

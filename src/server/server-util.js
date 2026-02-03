@@ -115,6 +115,34 @@ export function assignGamePoints(room, assignRank) {
   return room.startingPlayers - assignRank + 1;
 }
 
+/**
+ * Assign a rank to a player and update their stats
+ * @param {object} room - Room state
+ * @param {number} seatIndex - Seat index of player
+ * @param {number} rank - Rank to assign (1-4)
+ * @returns {void}
+ */
+export function assignRankToPlayer(room, seatIndex, rank) {
+  const socketId = room.seated[seatIndex];
+  room.rank[seatIndex] = rank;
+
+  if (room.stats[socketId]) {
+    room.stats[socketId].points += assignGamePoints(room, rank);
+    room.stats[socketId].playerGames += room.startingPlayers;
+    room.stats[socketId].games += 1;
+
+    if (rank === 1) {
+      room.stats[socketId].first += 1;
+    } else if (rank === 2) {
+      room.stats[socketId].second += 1;
+    } else if (rank === 3) {
+      room.stats[socketId].third += 1;
+    } else if (rank === 4) {
+      room.stats[socketId].fourth += 1;
+    }
+  }
+}
+
 // Validation functions for submitHand
 
 export function validateTurn(room, socketId) {
@@ -245,4 +273,36 @@ export function replaceSocketId(room, oldSocketId, newSocketId) {
     room.stats[newSocketId] = room.stats[oldSocketId];
     delete room.stats[oldSocketId];
   }
+}
+
+/**
+ * Find the next player's turn, skipping empty seats and finished players
+ * @param {object} room - Room state
+ * @returns {number} Seat index of next player
+ * @throws {Error} If no valid next player found
+ */
+export function findNextPlayersTurn(room) {
+  let nextPlayer = null;
+
+  for (let i = 1; i <= 4; i++) {
+    let seatIndex = room.turnIndex + i;
+    if (seatIndex > 3) {
+      seatIndex = seatIndex - 4;
+    }
+    // if there's someone sitting here, it's a valid seat
+    if (room.seated[seatIndex]) {
+      // if this person already finished and has a rank, skip
+      if (room.rank[seatIndex]) {
+        continue;
+      }
+      nextPlayer = seatIndex;
+      break;
+    }
+  }
+
+  if (nextPlayer === null) {
+    throw new Error('could not determine next player', { data: JSON.parse(JSON.stringify(room)) });
+  }
+
+  return nextPlayer;
 }

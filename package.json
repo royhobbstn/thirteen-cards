@@ -33,6 +33,8 @@
     "eject": "react-scripts eject",
     "server-dev": "NODE_ENV=development nodemon src/server/app.js",
     "start": "NODE_ENV=production node src/server/app.js",
+    "test": "react-scripts test",
+    "test:coverage": "react-scripts test --coverage --watchAll=false",
     "loc": "scc --avg-wage 130000 --by-file --exclude-dir node_modules --exclude-dir build --include-ext js ."
   },
   "eslintConfig": {
@@ -51,6 +53,20 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "jest": {
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "src/server/app.js",
+      "src/server/gameLog.js",
+      "src/testFixtures/"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx}",
+      "!src/index.js",
+      "!src/reportWebVitals.js",
+      "!src/setupTests.js"
     ]
   }
 }
