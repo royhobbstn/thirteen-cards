@@ -695,11 +695,7 @@ table.ui.table.stats-table th {
 }
 
 /* ===== TOAST NOTIFICATION STYLES ===== */
-/* Override react-hot-toast defaults for consistent styling */
-[data-sonner-toaster] [data-sonner-toast],
-.go2072408551 {
-  font-family: var(--font-body) !important;
-}
+/* Toast styling is handled via Toaster props in App.js for reliability */
 
 /* ===== ADDITIONAL UI POLISH ===== */
 
@@ -760,13 +756,6 @@ table.ui.table.stats-table tr:hover {
 /* Chat enhancements */
 .chat-container {
   font-family: var(--font-body);
-}
-
-/* Card selection bounce animation */
-@keyframes cardBounce {
-  0% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-8px) scale(1.02); }
-  100% { transform: translateY(-33px) scale(1); }
 }
 
 /* Tab container styling */

@@ -15,27 +15,36 @@ const useGame = (socketRef, socketReady) => {
     const socket = socketRef.current;
     socket.on('gameData', message => {
       setGameData(prevData => {
+        // Guard: ensure socket is still connected
+        if (!socketRef.current?.id) {
+          return message;
+        }
+
         // Check for turn change notifications
         const seatIndex = getSeatIndex(message, socketRef);
-        const isMyTurn = seatIndex === message.turnIndex;
-        const wasMyTurn = prevData && seatIndex === prevData.turnIndex;
 
-        // Only notify on turn change during active game
-        if (message.stage === 'game' && prevData?.stage === 'game') {
-          if (isMyTurn && !wasMyTurn && prevTurnIndexRef.current !== message.turnIndex) {
-            toast('Your turn!', {
-              icon: '🎴',
-              duration: 2000,
-              style: {
-                background: '#21ba45',
-                color: '#fff',
-                fontWeight: '600',
-              },
-            });
+        // Only process turn notifications if player is seated (not a spectator)
+        if (seatIndex !== null) {
+          const isMyTurn = seatIndex === message.turnIndex;
+          const wasMyTurn = prevData && seatIndex === prevData.turnIndex;
+
+          // Only notify on turn change during active game
+          if (message.stage === 'game' && prevData?.stage === 'game') {
+            if (isMyTurn && !wasMyTurn && prevTurnIndexRef.current !== message.turnIndex) {
+              toast('Your turn!', {
+                icon: '🎴',
+                duration: 2000,
+                style: {
+                  background: '#21ba45',
+                  color: '#fff',
+                  fontWeight: '600',
+                },
+              });
+            }
           }
         }
 
-        // Notify when game starts
+        // Notify when game starts (for all connected users)
         if (message.stage === 'game' && prevStageRef.current === 'seating') {
           toast.success('Game started!', { duration: 2000 });
         }

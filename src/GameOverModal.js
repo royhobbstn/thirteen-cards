@@ -5,10 +5,16 @@ import { getSeatIndex, isAiSeat } from './util.js';
 
 const PLACEMENT_LABELS = ['1st', '2nd', '3rd', '4th'];
 
-// Confetti celebration effect
-function fireConfetti(isWinner) {
+// Confetti celebration effect - returns cleanup function for interval
+function fireConfetti(isWinner, prefersReducedMotion) {
+  // Respect user's motion preferences
+  if (prefersReducedMotion) {
+    return () => {}; // No-op cleanup
+  }
+
   const duration = isWinner ? 3000 : 1500;
   const end = Date.now() + duration;
+  let intervalId = null;
 
   // Winner gets a big celebration
   if (isWinner) {
@@ -20,10 +26,11 @@ function fireConfetti(isWinner) {
       colors: ['#ffd700', '#ffb800', '#ff6b6b', '#4ecdc4', '#45b7d1'],
     });
 
-    // Continuous confetti
-    const interval = setInterval(() => {
+    // Continuous confetti from sides
+    intervalId = setInterval(() => {
       if (Date.now() > end) {
-        clearInterval(interval);
+        clearInterval(intervalId);
+        intervalId = null;
         return;
       }
 
@@ -51,33 +58,43 @@ function fireConfetti(isWinner) {
       colors: ['#4ecdc4', '#45b7d1', '#96ceb4'],
     });
   }
+
+  // Return cleanup function
+  return () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+    }
+  };
 }
 
 export function GameOverModal({ gameData, socketRef, sendMessage, onClose }) {
-  const hasPlayedConfetti = React.useRef(false);
-
   const playerSeatIndex = getSeatIndex(gameData, socketRef);
 
-  // Trigger confetti when modal opens
+  // Trigger confetti when modal opens with proper cleanup
   React.useEffect(() => {
-    if (gameData?.stage === 'done' && !hasPlayedConfetti.current) {
-      hasPlayedConfetti.current = true;
-      const playerRank = gameData.rank[playerSeatIndex];
-      const isWinner = playerRank === 1;
-
-      // Small delay to let modal animate in first
-      setTimeout(() => {
-        fireConfetti(isWinner);
-      }, 300);
+    if (gameData?.stage !== 'done') {
+      return;
     }
-  }, [gameData?.stage, gameData?.rank, playerSeatIndex]);
 
-  // Reset confetti flag when modal closes
-  React.useEffect(() => {
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Determine if player won (spectators/null seatIndex treated as non-winner)
+    const playerRank = playerSeatIndex !== null ? gameData.rank[playerSeatIndex] : null;
+    const isWinner = playerRank === 1;
+
+    // Small delay to let modal animate in first
+    let cleanupConfetti = () => {};
+    const timeoutId = setTimeout(() => {
+      cleanupConfetti = fireConfetti(isWinner, prefersReducedMotion);
+    }, 300);
+
+    // Cleanup on unmount
     return () => {
-      hasPlayedConfetti.current = false;
+      clearTimeout(timeoutId);
+      cleanupConfetti();
     };
-  }, []);
+  }, [gameData?.stage, gameData?.rank, playerSeatIndex]);
 
   if (!gameData || gameData.stage !== 'done') {
     return null;
