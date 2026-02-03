@@ -47,7 +47,50 @@ const Room = ({
     }
   }, [roomName, roomNameLabel, updateRoomNameLabel]);
 
-  return socketReady ? (
+  // Calculate board dimensions for skeleton
+  let boardHeight = windowDimensions.height - 260;
+  if (boardHeight < 250) {
+    boardHeight = 250;
+  }
+  const boardWidth = windowDimensions.width * 0.68;
+
+  // Show skeleton while connecting or waiting for initial game data
+  if (!socketReady || !gameData) {
+    return (
+      <Grid>
+        <Grid.Column width={11} style={{ paddingRight: '5px' }}>
+          <div
+            style={{
+              position: 'relative',
+              margin: 'auto',
+              width: boardWidth + 'px',
+              height: boardHeight + 'px',
+            }}
+          >
+            <div
+              className="skeleton skeleton-board"
+              style={{
+                height: '100%',
+                margin: '0 0 10px 10px',
+              }}
+            />
+          </div>
+          <div
+            className="skeleton skeleton-card-space"
+            style={{
+              width: boardWidth + 'px',
+              marginLeft: '10px',
+            }}
+          />
+        </Grid.Column>
+        <Grid.Column width={5} style={{ paddingLeft: '5px' }}>
+          <div className="skeleton skeleton-tab" style={{ margin: '10px' }} />
+        </Grid.Column>
+      </Grid>
+    );
+  }
+
+  return (
     <Grid>
       <Grid.Column width={11} style={{ paddingRight: '5px' }}>
         <Game
@@ -61,7 +104,7 @@ const Room = ({
         <TabContainer socketRef={socketRef} gameData={gameData} />
       </Grid.Column>
     </Grid>
-  ) : null;
+  );
 };
 
 export default Room;

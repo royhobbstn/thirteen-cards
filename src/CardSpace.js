@@ -3,7 +3,7 @@ import { ReactSortable } from 'react-sortablejs';
 import { getDetectedCards } from './cardUtils/detectedCards';
 import { restrictPlay, missingLowCard, isFreePlay } from './util.js';
 
-function CardImage({ cardId, rotation, verticalOffset, selected }) {
+function CardImage({ cardId, rotation, verticalOffset, selected, justSelected, isValidPlay }) {
   const [isHovered, setIsHovered] = React.useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
 
@@ -33,9 +33,19 @@ function CardImage({ cardId, rotation, verticalOffset, selected }) {
     setIsHovered(false);
   };
 
+  // Build class names
+  const classNames = [
+    'box-shadow',
+    'card-interactive',
+    'card-fan',
+    selected ? 'card-selected' : '',
+    justSelected ? 'card-selecting' : '',
+    selected && isValidPlay ? 'valid-play-glow' : '',
+  ].filter(Boolean).join(' ');
+
   return (
     <img
-      className={`box-shadow card-interactive card-fan ${selected ? 'card-selected' : ''}`}
+      className={classNames}
       style={{
         width: '85px',
         height: 'auto',
@@ -62,9 +72,11 @@ export function CardSpace({
 }) {
   const [cards, setCards] = React.useState(cardObjects);
   const [selectedIds, setSelectedIds] = React.useState(new Set());
+  const [justSelectedId, setJustSelectedId] = React.useState(null);
   const lastGameIdRef = React.useRef(null);
   const lastCardIdsRef = React.useRef(new Set());
   const isDraggingRef = React.useRef(false);
+  const selectionTimerRef = React.useRef(null);
 
   // Reset card states when a new game starts, sync with server on card changes
   React.useEffect(() => {
@@ -114,7 +126,26 @@ export function CardSpace({
 
   const isYourTurn = seatIndex === gameData.turnIndex;
 
+  // Check if the current selection is a valid play
+  const isValidSelection =
+    selectedIds.size > 0 &&
+    detectedHand.rank > 0 &&
+    !missingLowCard(gameData, selectedCards) &&
+    !restrictPlay(gameData, seatIndex, detectedHand);
+
   function toggleCard(cardId) {
+    // Clear any pending selection animation timer
+    if (selectionTimerRef.current) {
+      clearTimeout(selectionTimerRef.current);
+    }
+
+    // Trigger bounce animation for the card being selected
+    setJustSelectedId(cardId);
+    selectionTimerRef.current = setTimeout(() => {
+      setJustSelectedId(null);
+      selectionTimerRef.current = null;
+    }, 250);
+
     setSelectedIds(prev => {
       const next = new Set(prev);
       next.has(cardId) ? next.delete(cardId) : next.add(cardId);
@@ -130,6 +161,15 @@ export function CardSpace({
     }
     toggleCard(cardId);
   }
+
+  // Cleanup timer on unmount
+  React.useEffect(() => {
+    return () => {
+      if (selectionTimerRef.current) {
+        clearTimeout(selectionTimerRef.current);
+      }
+    };
+  }, []);
 
   function submitHand() {
     sendMessage('submitHand', selectedCards);
@@ -216,6 +256,8 @@ export function CardSpace({
                     rotation={rotation}
                     verticalOffset={verticalOffset}
                     selected={isSelected}
+                    justSelected={justSelectedId === card.id}
+                    isValidPlay={isValidSelection && isYourTurn}
                   />
                 </div>
               );

@@ -8,10 +8,13 @@ const useChat = socketRef => {
 
   React.useEffect(() => {
     const socket = socketRef.current;
+    if (!socket) return;
+
     const handleMessage = message => {
       const incomingMessage = {
         ...message,
         ownedByCurrentUser: message.senderId === socket.id,
+        timestamp: Date.now(),
       };
       setMessages(messages => [...messages, incomingMessage]);
     };

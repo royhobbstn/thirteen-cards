@@ -10,9 +10,10 @@ export function GameStageBoard({ gameData, sendMessage, socketRef, seatIndex, ju
   const isAi = isAiSeat(seatId);
   const turnClass = isActiveTurn ? (isSelf ? 'active-turn-self' : 'active-turn') : '';
   const justPlayedClass = justPlayed ? 'just-played' : '';
+  const spotlightClass = isActiveTurn && isSelf ? 'seat-spotlight' : '';
 
   return (
-    <div className={`${turnClass} ${justPlayedClass}`.trim()}>
+    <div className={`${turnClass} ${justPlayedClass} ${spotlightClass}`.trim()}>
       {/* Empty seat */}
       {seatId === null && (
         <Button disabled>

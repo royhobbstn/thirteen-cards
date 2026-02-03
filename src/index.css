@@ -37,6 +37,7 @@
   --color-warning: #f2711c;
   --color-error: #ff4444;
   --color-error-dark: #cc0000;
+  --color-gamelog: #4a7c59;
 
   /* Colors - Neutral */
   --color-gray-50: #f9fafb;
@@ -97,6 +98,78 @@
   --z-overlay: 50;
   --z-modal: 100;
   --z-toast: 200;
+}
+
+/* ===== DARK MODE ===== */
+[data-theme='dark'] {
+  /* Colors - Neutral (inverted) */
+  --color-gray-50: #111827;
+  --color-gray-100: #1f2937;
+  --color-gray-200: #374151;
+  --color-gray-300: #4b5563;
+  --color-gray-400: #6b7280;
+  --color-gray-500: #9ca3af;
+  --color-gray-600: #d1d5db;
+  --color-gray-700: #e5e7eb;
+  --color-gray-800: #f3f4f6;
+  --color-gray-900: #f9fafb;
+
+  /* Surfaces */
+  --surface-overlay: rgba(0, 0, 0, 0.85);
+  --surface-overlay-light: rgba(0, 0, 0, 0.7);
+  --surface-card: rgba(31, 41, 55, 1);
+  --surface-elevated: rgba(31, 41, 55, 0.95);
+
+  /* Shadows (softer for dark mode) */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6);
+
+  /* Adjusted glows for dark mode */
+  --shadow-glow-primary: 0 0 25px 8px rgba(33, 208, 33, 0.5);
+  --shadow-glow-info: 0 0 25px 8px rgba(33, 133, 208, 0.5);
+  --shadow-glow-accent: 0 0 25px 12px rgba(255, 215, 0, 0.4);
+
+  /* Gamelog color (lighter for dark mode) */
+  --color-gamelog: #7cb492;
+}
+
+/* System preference detection */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    /* Colors - Neutral (inverted) */
+    --color-gray-50: #111827;
+    --color-gray-100: #1f2937;
+    --color-gray-200: #374151;
+    --color-gray-300: #4b5563;
+    --color-gray-400: #6b7280;
+    --color-gray-500: #9ca3af;
+    --color-gray-600: #d1d5db;
+    --color-gray-700: #e5e7eb;
+    --color-gray-800: #f3f4f6;
+    --color-gray-900: #f9fafb;
+
+    /* Surfaces */
+    --surface-overlay: rgba(0, 0, 0, 0.85);
+    --surface-overlay-light: rgba(0, 0, 0, 0.7);
+    --surface-card: rgba(31, 41, 55, 1);
+    --surface-elevated: rgba(31, 41, 55, 0.95);
+
+    /* Shadows (softer for dark mode) */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6);
+
+    /* Adjusted glows for dark mode */
+    --shadow-glow-primary: 0 0 25px 8px rgba(33, 208, 33, 0.5);
+    --shadow-glow-info: 0 0 25px 8px rgba(33, 133, 208, 0.5);
+    --shadow-glow-accent: 0 0 25px 12px rgba(255, 215, 0, 0.4);
+
+    /* Gamelog color (lighter for dark mode) */
+    --color-gamelog: #7cb492;
+  }
 }
 
 /* ===== GLOBAL STYLES ===== */
@@ -832,5 +905,641 @@ table.ui.table.stats-table tr:hover {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* ===== DARK MODE COMPONENT OVERRIDES ===== */
+[data-theme='dark'] body {
+  background-color: #111827;
+  color: #f3f4f6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) body {
+    background-color: #111827;
+    color: #f3f4f6;
+  }
+}
+
+[data-theme='dark'] .ui.menu,
+[data-theme='dark'] .ui.segment,
+[data-theme='dark'] .ui.modal,
+[data-theme='dark'] .ui.table {
+  background: var(--surface-card) !important;
+  color: var(--color-gray-800) !important;
+}
+
+[data-theme='dark'] .ui.menu .item {
+  color: var(--color-gray-700) !important;
+}
+
+[data-theme='dark'] .ui.menu .active.item {
+  background: var(--color-gray-200) !important;
+  color: var(--color-gray-900) !important;
+}
+
+[data-theme='dark'] .ui.table th {
+  background: var(--color-gray-200) !important;
+  color: var(--color-gray-800) !important;
+}
+
+[data-theme='dark'] .ui.table td {
+  border-top-color: var(--color-gray-300) !important;
+  color: var(--color-gray-700) !important;
+}
+
+[data-theme='dark'] .ui.celled.table tr td,
+[data-theme='dark'] .ui.celled.table tr th {
+  border-color: var(--color-gray-300) !important;
+}
+
+[data-theme='dark'] .ui.input input,
+[data-theme='dark'] .ui.form textarea {
+  background: var(--color-gray-200) !important;
+  color: var(--color-gray-800) !important;
+  border-color: var(--color-gray-300) !important;
+}
+
+[data-theme='dark'] .ui.input input::placeholder,
+[data-theme='dark'] .ui.form textarea::placeholder {
+  color: var(--color-gray-500) !important;
+}
+
+[data-theme='dark'] .ui.modal > .header {
+  background: var(--color-gray-200) !important;
+  color: var(--color-gray-900) !important;
+  border-bottom-color: var(--color-gray-300) !important;
+}
+
+[data-theme='dark'] .ui.modal > .content {
+  background: var(--surface-card) !important;
+  color: var(--color-gray-800) !important;
+}
+
+[data-theme='dark'] .ui.modal > .actions {
+  background: var(--color-gray-200) !important;
+  border-top-color: var(--color-gray-300) !important;
+}
+
+[data-theme='dark'] .ui.button {
+  background: var(--color-gray-300) !important;
+  color: var(--color-gray-800) !important;
+}
+
+[data-theme='dark'] .ui.button:hover {
+  background: var(--color-gray-400) !important;
+}
+
+[data-theme='dark'] .ui.primary.button {
+  background: linear-gradient(135deg, var(--color-info), #1a6bb3) !important;
+  color: white !important;
+}
+
+[data-theme='dark'] .box-shadow {
+  background-color: var(--surface-card);
+  border-color: var(--color-gray-400);
+}
+
+[data-theme='dark'] .chat-messages-container {
+  background-color: var(--color-gray-100) !important;
+  border-color: var(--color-gray-300) !important;
+}
+
+[data-theme='dark'] .ui.attached.tabular.menu .item {
+  background: var(--color-gray-200) !important;
+}
+
+[data-theme='dark'] .ui.attached.tabular.menu .active.item {
+  background: var(--surface-card) !important;
+  border-color: var(--color-gray-300) !important;
+}
+
+[data-theme='dark'] .ui.bottom.attached.segment {
+  background: var(--surface-card) !important;
+  border-color: var(--color-gray-300) !important;
+}
+
+/* System preference dark mode component overrides */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .ui.menu,
+  :root:not([data-theme='light']) .ui.segment,
+  :root:not([data-theme='light']) .ui.modal,
+  :root:not([data-theme='light']) .ui.table {
+    background: var(--surface-card) !important;
+    color: var(--color-gray-800) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.menu .item {
+    color: var(--color-gray-700) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.menu .active.item {
+    background: var(--color-gray-200) !important;
+    color: var(--color-gray-900) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.table th {
+    background: var(--color-gray-200) !important;
+    color: var(--color-gray-800) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.table td {
+    border-top-color: var(--color-gray-300) !important;
+    color: var(--color-gray-700) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.celled.table tr td,
+  :root:not([data-theme='light']) .ui.celled.table tr th {
+    border-color: var(--color-gray-300) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.input input,
+  :root:not([data-theme='light']) .ui.form textarea {
+    background: var(--color-gray-200) !important;
+    color: var(--color-gray-800) !important;
+    border-color: var(--color-gray-300) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.input input::placeholder,
+  :root:not([data-theme='light']) .ui.form textarea::placeholder {
+    color: var(--color-gray-500) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.modal > .header {
+    background: var(--color-gray-200) !important;
+    color: var(--color-gray-900) !important;
+    border-bottom-color: var(--color-gray-300) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.modal > .content {
+    background: var(--surface-card) !important;
+    color: var(--color-gray-800) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.modal > .actions {
+    background: var(--color-gray-200) !important;
+    border-top-color: var(--color-gray-300) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.button {
+    background: var(--color-gray-300) !important;
+    color: var(--color-gray-800) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.button:hover {
+    background: var(--color-gray-400) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.primary.button {
+    background: linear-gradient(135deg, var(--color-info), #1a6bb3) !important;
+    color: white !important;
+  }
+
+  :root:not([data-theme='light']) .box-shadow {
+    background-color: var(--surface-card);
+    border-color: var(--color-gray-400);
+  }
+
+  :root:not([data-theme='light']) .chat-messages-container {
+    background-color: var(--color-gray-100) !important;
+    border-color: var(--color-gray-300) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.attached.tabular.menu .item {
+    background: var(--color-gray-200) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.attached.tabular.menu .active.item {
+    background: var(--surface-card) !important;
+    border-color: var(--color-gray-300) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.bottom.attached.segment {
+    background: var(--surface-card) !important;
+    border-color: var(--color-gray-300) !important;
+  }
+}
+
+/* Dark mode toggle switch styles */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.theme-toggle-label {
+  font-weight: var(--font-medium);
+  color: var(--color-gray-700);
+}
+
+[data-theme='dark'] .theme-toggle-label {
+  color: var(--color-gray-600);
+}
+
+.theme-switch {
+  position: relative;
+  width: 50px;
+  height: 26px;
+}
+
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.theme-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-gray-300);
+  transition: var(--transition-base);
+  border-radius: var(--radius-full);
+}
+
+.theme-switch-slider:before {
+  position: absolute;
+  content: '';
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: var(--transition-base);
+  border-radius: 50%;
+}
+
+.theme-switch input:checked + .theme-switch-slider {
+  background-color: var(--color-info);
+}
+
+.theme-switch input:checked + .theme-switch-slider:before {
+  transform: translateX(24px);
+}
+
+.theme-switch-icons {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 6px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+/* ===== SKELETON LOADERS ===== */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-gray-200) 25%,
+    var(--color-gray-100) 50%,
+    var(--color-gray-200) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+  border-radius: var(--radius-md);
+}
+
+.skeleton-board {
+  width: 100%;
+  height: 100%;
+  border-radius: 15px;
+}
+
+.skeleton-seat {
+  width: 78px;
+  height: 50px;
+  border-radius: var(--radius-lg);
+}
+
+.skeleton-card-space {
+  height: 180px;
+  width: 100%;
+  border-radius: var(--radius-md);
+  margin-top: 10px;
+}
+
+.skeleton-tab {
+  height: 50vh;
+  width: 100%;
+  border-radius: var(--radius-lg);
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: var(--space-4);
+  color: var(--color-gray-500);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-gray-200);
+  border-top-color: var(--color-info);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: var(--color-gray-200);
+  }
+
+  .loading-spinner {
+    animation: none;
+    border-top-color: var(--color-gray-400);
+  }
+}
+
+/* ===== EMPTY STATES ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--color-gray-500);
+}
+
+.empty-state-icon {
+  font-size: 3rem !important;
+  margin-bottom: var(--space-4) !important;
+  opacity: 0.6;
+}
+
+.empty-state-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--color-gray-600);
+  margin-bottom: var(--space-2);
+}
+
+.empty-state-description {
+  font-size: var(--text-sm);
+  color: var(--color-gray-400);
+  max-width: 200px;
+}
+
+/* Empty state on game board needs background for readability */
+.empty-state-board {
+  background: var(--surface-overlay);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.empty-state-board .empty-state-icon {
+  color: var(--color-gray-300);
+}
+
+.empty-state-board .empty-state-title {
+  color: var(--color-gray-100);
+}
+
+.empty-state-board .empty-state-description {
+  color: var(--color-gray-300);
+}
+
+.empty-state-board .waiting-dot {
+  background: var(--color-gray-300);
+}
+
+/* Waiting for players animation */
+@keyframes waitingPulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.waiting-dots {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: 4px;
+}
+
+.waiting-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--color-gray-400);
+  border-radius: 50%;
+  animation: waitingPulse 1.4s ease-in-out infinite;
+}
+
+.waiting-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.waiting-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waiting-dot {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
+/* ===== CARD SELECTION FEEDBACK ===== */
+
+/* Bounce animation when selecting a card */
+@keyframes cardSelectBounce {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(0.95);
+  }
+  70% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.card-selecting {
+  animation: cardSelectBounce 0.25s ease-out;
+}
+
+/* Glow effect for valid play selection - use filter for animation to avoid box-shadow conflict */
+@keyframes validPlayGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px rgba(33, 186, 69, 0.6)) brightness(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(33, 186, 69, 0.9)) brightness(1.05);
+  }
+}
+
+.valid-play-glow {
+  animation: validPlayGlow 1.5s ease-in-out infinite;
+}
+
+/* Shake animation for invalid selections */
+@keyframes invalidShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-4px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(4px);
+  }
+}
+
+.invalid-shake {
+  animation: invalidShake 0.5s ease-out;
+}
+
+/* Invalid selection flash */
+@keyframes invalidFlash {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 15px 5px rgba(255, 68, 68, 0.6);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 68, 68, 0);
+  }
+}
+
+.invalid-flash {
+  animation: invalidFlash 0.4s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-selecting,
+  .valid-play-glow,
+  .invalid-shake,
+  .invalid-flash {
+    animation: none;
+  }
+
+  .valid-play-glow {
+    filter: drop-shadow(0 0 8px rgba(33, 186, 69, 0.7));
+  }
+}
+
+/* ===== TURN TRANSITION POLISH ===== */
+
+/* Spotlight effect on current player's seat */
+@keyframes spotlightPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px 8px rgba(255, 215, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 35px 15px rgba(255, 215, 0, 0.5);
+  }
+}
+
+.seat-spotlight {
+  position: relative;
+}
+
+.seat-spotlight::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  border-radius: var(--radius-xl);
+  animation: spotlightPulse 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* "Your Turn" banner */
+@keyframes yourTurnSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.8);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(5px) scale(1.05);
+  }
+  30% {
+    transform: translateY(0) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+}
+
+.your-turn-banner {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-toast);
+  background: linear-gradient(135deg, var(--color-accent) 0%, #ffb800 100%);
+  color: var(--color-gray-900);
+  padding: var(--space-3) var(--space-8);
+  border-radius: var(--radius-full);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  box-shadow: var(--shadow-lg), 0 0 30px rgba(255, 215, 0, 0.5);
+  animation: yourTurnSlideIn 2.5s ease-out forwards;
+  pointer-events: none;
+}
+
+.your-turn-banner-icon {
+  margin-right: var(--space-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seat-spotlight::before {
+    animation: none;
+    box-shadow: 0 0 25px 10px rgba(255, 215, 0, 0.4);
+  }
+
+  .your-turn-banner {
+    animation: none;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 }

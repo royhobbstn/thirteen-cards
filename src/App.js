@@ -5,6 +5,7 @@ import Home from './Home';
 import Room from './Room';
 import MainMenu from './MainMenu';
 import useGame from './useGame';
+import { getSafeTheme, applyTheme } from './util';
 
 function getWindowDimensions() {
   const { innerWidth: width, innerHeight: height } = window;
@@ -30,6 +31,11 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Apply saved theme on mount
+  React.useEffect(() => {
+    applyTheme(getSafeTheme());
+  }, []);
+
   return (
     <React.Fragment>
       <Toaster
@@ -37,10 +43,12 @@ function App() {
         toastOptions={{
           duration: 3000,
           style: {
-            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+            fontFamily: 'var(--font-body, Inter, -apple-system, BlinkMacSystemFont, sans-serif)',
             borderRadius: '8px',
             padding: '12px 16px',
             boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
+            background: 'var(--surface-card, #fff)',
+            color: 'var(--color-gray-800, #1f2937)',
           },
           success: {
             iconTheme: {

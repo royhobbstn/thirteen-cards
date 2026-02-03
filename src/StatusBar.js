@@ -21,25 +21,25 @@ export function StatusBar({ gameData, socketRef, sendMessage, seatIndex }) {
       ) : null}
       {gameData.rank[seatIndex] ? (
         <Menu.Item header>
-          <span style={{ color: 'blue' }}>{getRank(gameData.rank[seatIndex])}</span>
+          <span style={{ color: 'var(--color-info)' }}>{getRank(gameData.rank[seatIndex])}</span>
         </Menu.Item>
       ) : null}
       {gameData.stage === 'game' && seatIndex !== null ? (
         seatIndex === gameData.turnIndex ? (
           <Menu.Item header>
-            <span style={{ color: 'green' }}>Your Turn!</span>&nbsp;{' '}
+            <span style={{ color: 'var(--color-success)' }}>Your Turn!</span>&nbsp;{' '}
             {lastPlay.play === 'Free Play' ? (
-              <span style={{ color: 'black', fontWeight: 'bold' }}>{lastPlay.play}</span>
+              <span style={{ color: 'var(--color-gray-800)', fontWeight: 'bold' }}>{lastPlay.play}</span>
             ) : (
-              <span style={{ fontWeight: '1', color: 'grey' }}>
+              <span style={{ fontWeight: '1', color: 'var(--color-gray-500)' }}>
                 Board Is:{' '}
-                <span style={{ color: 'black', fontWeight: 'bold' }}>{lastPlay.name}</span>
+                <span style={{ color: 'var(--color-gray-800)', fontWeight: 'bold' }}>{lastPlay.name}</span>
               </span>
             )}
           </Menu.Item>
         ) : (
           <Menu.Item header>
-            <span style={{ color: 'red' }}>
+            <span style={{ color: 'var(--color-warning)' }}>
               {gameData.seated[gameData.turnIndex] === 'disconnected'
                 ? 'Disconnected player'
                 : gameData.aliases[gameData.seated[gameData.turnIndex]] || 'Unknown'}

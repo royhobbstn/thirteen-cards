@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Icon } from 'semantic-ui-react';
 import BackgroundImg from './images/table-bg.jpg';
 import { SeatingStageBoard } from './SeatingStageBoard';
 import { GameStageBoard } from './GameStageBoard';
@@ -321,6 +322,31 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
             </div>
           );
         })}
+        {/* Empty state when waiting for players */}
+        {gameData.stage === 'seating' && gameData.seated.every(s => s === null) && (
+          <div
+            className="empty-state empty-state-board"
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+            }}
+          >
+            <Icon name="users" className="empty-state-icon" />
+            <div className="empty-state-title">
+              Waiting for players
+              <span className="waiting-dots">
+                <span className="waiting-dot" />
+                <span className="waiting-dot" />
+                <span className="waiting-dot" />
+              </span>
+            </div>
+            <div className="empty-state-description">
+              Click a seat to join or add an AI player
+            </div>
+          </div>
+        )}
         {/* Play type announcement overlay */}
         {playAnnouncement && (
           <div

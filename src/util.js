@@ -124,3 +124,75 @@ export const AI_DISPLAY_NAMES = {
   eddie: 'Eddie (Aggressive)',
   grandmaliu: 'Grandma Liu (Conservative)',
 };
+
+// Theme helpers
+
+/**
+ * Get saved theme preference or 'system' for auto
+ * @returns {'light' | 'dark' | 'system'}
+ */
+export function getSafeTheme() {
+  const theme = localStorage.getItem('theme');
+  if (theme === 'light' || theme === 'dark') return theme;
+  return 'system';
+}
+
+/**
+ * Apply theme to document
+ * @param {'light' | 'dark' | 'system'} theme
+ */
+export function applyTheme(theme) {
+  const root = document.documentElement;
+  if (theme === 'system') {
+    root.removeAttribute('data-theme');
+  } else {
+    root.setAttribute('data-theme', theme);
+  }
+  localStorage.setItem('theme', theme);
+}
+
+/**
+ * Get initials from a name (max 2 characters)
+ * @param {string} name
+ * @returns {string}
+ */
+export function getInitials(name) {
+  if (!name || typeof name !== 'string') return '?';
+  const trimmed = name.trim();
+  if (!trimmed) return '?';
+  const parts = trimmed.split(/\s+/).filter(p => p.length > 0);
+  if (parts.length >= 2 && parts[0][0] && parts[1][0]) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return trimmed.slice(0, 2).toUpperCase();
+}
+
+/**
+ * Format a relative timestamp
+ * @param {Date|number} date
+ * @returns {string}
+ */
+export function formatRelativeTime(date) {
+  if (date == null) return '';
+
+  const now = Date.now();
+  const then = date instanceof Date ? date.getTime() : date;
+
+  // Handle invalid dates
+  if (!Number.isFinite(then)) return '';
+
+  const diffMs = now - then;
+
+  // Handle future dates (show as "now")
+  if (diffMs < 0) return 'now';
+
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHr = Math.floor(diffMin / 60);
+
+  if (diffSec < 5) return 'now';
+  if (diffSec < 60) return `${diffSec}s ago`;
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffHr < 24) return `${diffHr}h ago`;
+  return new Date(then).toLocaleDateString();
+}

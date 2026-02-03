@@ -8,7 +8,8 @@ export function Rules() {
         overflowY: 'scroll',
         borderRadius: '5px',
         height: '70vh',
-        backgroundColor: 'white',
+        backgroundColor: 'var(--surface-card)',
+        color: 'var(--color-gray-800)',
       }}
     >
       <h3>Rules</h3>
