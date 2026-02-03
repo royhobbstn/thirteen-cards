@@ -87,6 +87,7 @@ io.on('connection', socket => {
     room.cards = [null, null, null, null]; // corresponds to table position.  value of null is empty, (non-ordered... let it be uncontrolled on client)
     room.submitted = []; // [array of cards currently submitted] or [] empty array for 'pass'.
     room.last = [null, null, null, null]; // [obj, null, pass, pass], corresponds to table position, value of null is empty. obj is detected hand object
+    room.lastPassSeat = null; // seat index of last player who passed (persists across board clears for UI notification)
     room.initial = true; // flag to indicate no hands have been played yet.  Purpose is when to necessitate hand must be played with lowest card available.
     room.lowest = null; // lowest card dealt.  must be played in first hand of game.
     room.stage = 'seating'; // seating | game | done
@@ -414,6 +415,7 @@ io.on('connection', socket => {
     roomData[roomName].last = roomData[roomName].last.map((entry, idx) =>
       idx === seatIndex ? detectedHand : null,
     );
+    roomData[roomName].lastPassSeat = null; // clear pass indicator when cards are played
 
     // Log card play (use sorted board for consistent display)
     const playerName = roomData[roomName].aliases[socket.id];
@@ -499,6 +501,7 @@ io.on('connection', socket => {
     const seatIndex = findSeatIndex(roomData[roomName], socket.id);
 
     roomData[roomName].last[seatIndex] = 'pass';
+    roomData[roomName].lastPassSeat = seatIndex;
 
     // Log pass
     const playerName = roomData[roomName].aliases[socket.id];

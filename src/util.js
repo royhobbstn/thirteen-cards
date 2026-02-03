@@ -117,18 +117,45 @@ export function getAiPersona(seatId) {
   return seatId.slice(2);
 }
 
-export const AI_PERSONAS = ['marcus', 'eddie', 'grandmaliu'];
+export const AI_PERSONAS = [
+  'marcus',
+  'eddie',
+  'grandmaliu',
+  'victor',
+  'sophie',
+  'frank',
+  'ada',
+  'meilin',
+];
 
 export const AI_DISPLAY_NAMES = {
   marcus: 'Marcus (Balanced)',
   eddie: 'Eddie (Aggressive)',
   grandmaliu: 'Grandma Liu (Conservative)',
+  victor: 'Victor (Bomb Collector)',
+  sophie: 'Sophie (Straight Specialist)',
+  frank: 'Uncle Frank (Psychological)',
+  ada: 'Professor Ada (Mathematical)',
+  meilin: 'Mei-Lin (Endgame Specialist)',
 };
 
 export const AI_PERSONA_DESCRIPTIONS = {
-  marcus: 'A well-rounded player who balances offense and defense. Makes calculated plays and adapts to the game state.',
-  eddie: 'An aggressive player who plays fast and uses high cards early. Aims to finish quickly at the risk of running out of strong cards.',
-  grandmaliu: 'A patient, conservative player who saves high cards for later. Plays defensively and waits for the right moment.',
+  marcus:
+    'A well-rounded player who balances offense and defense. Makes calculated plays and adapts to the game state.',
+  eddie:
+    'An aggressive player who plays fast and uses high cards early. Aims to finish quickly at the risk of running out of strong cards.',
+  grandmaliu:
+    'A patient, conservative player who saves high cards for later. Plays defensively and waits for the right moment.',
+  victor:
+    'A tactical player who protects 3-of-a-kinds to build bombs. Saves bombs for critical moments and finishes explosively.',
+  sophie:
+    'A sequence specialist who builds and protects straights. Prefers playing long consecutive runs over other combinations.',
+  frank:
+    'An unpredictable player with variable timing. Uses strategic passes to bait opponents and occasional power plays to intimidate.',
+  ada:
+    'A methodical player who calculates efficiency for every play. Maximizes card elimination while preserving high-value cards.',
+  meilin:
+    'A patient strategist who conserves resources early and dominates the endgame. Shifts to aggressive mode when victory is near.',
 };
 
 // Theme helpers

@@ -39,6 +39,8 @@ export function SeatingStageBoard({ gameData, sendMessage, socketRef, seatIndex 
             options={aiOptions}
             onChange={(e, { value }) => sendMessage('addAi', { seatIndex, persona: value })}
           />
+          {/* Empty span prevents :last-child selector from matching dropdown on left seat */}
+          {seatIndex === 3 && <span style={{ display: 'none' }} />}
         </Button.Group>
       )}
 

@@ -53,7 +53,8 @@ const getAnimationClass = seat => {
 export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
   const prevBoardRef = React.useRef([]);
   const prevTurnIndexRef = React.useRef(null);
-  const prevLastForPassRef = React.useRef([null, null, null, null]);
+  const prevLastPassSeatRef = React.useRef(null);
+  const passTimeoutRef = React.useRef(null);
 
   const [animatingCards, setAnimatingCards] = React.useState(new Set());
   const [lastPlayedSeat, setLastPlayedSeat] = React.useState(null);
@@ -109,29 +110,37 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
     return () => timeouts.forEach(t => clearTimeout(t));
   }, [gameData.board, gameData.turnIndex, gameData.last]);
 
-  // Track pass actions (separate effect with its own ref to avoid race conditions)
+  // Track pass actions using lastPassSeat (persists across board clears)
   React.useEffect(() => {
-    const prevLast = prevLastForPassRef.current;
-    const currentLast = gameData.last ?? [null, null, null, null];
-    const timeouts = [];
+    const currentLastPassSeat = gameData.lastPassSeat;
+    const prevLastPassSeat = prevLastPassSeatRef.current;
+    const cooldownTimeouts = [];
 
-    for (let i = 0; i < 4; i++) {
-      // Detect when a seat changes to 'pass' (wasn't 'pass' before)
-      if (currentLast[i] === 'pass' && prevLast[i] !== 'pass') {
-        setPassIndicator(i);
-        timeouts.push(setTimeout(() => setPassIndicator(null), 1500));
-
-        // Start cooldown for pass actions too
-        setPlayCooldown(true);
-        timeouts.push(setTimeout(() => setPlayCooldown(false), PLAY_COOLDOWN_MS));
-        break;
+    // Detect when a new pass occurs (lastPassSeat changes to a valid seat index)
+    if (
+      currentLastPassSeat !== null &&
+      currentLastPassSeat !== prevLastPassSeat
+    ) {
+      setPassIndicator(currentLastPassSeat);
+      // Use stable ref for pass indicator timeout so it persists across effect re-runs
+      if (passTimeoutRef.current) {
+        clearTimeout(passTimeoutRef.current);
       }
+      passTimeoutRef.current = setTimeout(() => {
+        setPassIndicator(null);
+        passTimeoutRef.current = null;
+      }, 1500);
+
+      // Start cooldown for pass actions too
+      setPlayCooldown(true);
+      cooldownTimeouts.push(setTimeout(() => setPlayCooldown(false), PLAY_COOLDOWN_MS));
     }
 
-    prevLastForPassRef.current = [...currentLast];
+    prevLastPassSeatRef.current = currentLastPassSeat;
 
-    return () => timeouts.forEach(t => clearTimeout(t));
-  }, [gameData.last]);
+    // Only clear cooldown timeouts on cleanup, not the pass indicator timeout
+    return () => cooldownTimeouts.forEach(t => clearTimeout(t));
+  }, [gameData.lastPassSeat]);
 
   // Reset animation state when game stage changes (e.g., new game starts)
   React.useEffect(() => {
@@ -144,7 +153,11 @@ export function Board({ gameData, sendMessage, socketRef, windowDimensions }) {
       setPlayCooldown(false);
       prevBoardRef.current = [];
       prevTurnIndexRef.current = null;
-      prevLastForPassRef.current = [null, null, null, null];
+      prevLastPassSeatRef.current = null;
+      if (passTimeoutRef.current) {
+        clearTimeout(passTimeoutRef.current);
+        passTimeoutRef.current = null;
+      }
     }
   }, [gameData.stage]);
   let boardHeight = windowDimensions.height - 260;

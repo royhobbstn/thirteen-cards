@@ -171,8 +171,6 @@ const rulesContent = [
             },
           ]}
           exclusive={false}
-          styled
-          fluid
         />
       </>
     ),
@@ -210,8 +208,6 @@ const rulesContent = [
             },
           ]}
           exclusive={false}
-          styled
-          fluid
         />
       </>
     ),

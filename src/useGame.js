@@ -1,10 +1,8 @@
 import * as React from 'react';
 import toast from 'react-hot-toast';
-import { getSeatIndex } from './util.js';
 
 const useGame = (socketRef, socketReady) => {
   const [gameData, setGameData] = React.useState(null);
-  const prevTurnIndexRef = React.useRef(null);
   const prevStageRef = React.useRef(null);
 
   // the only message type sent back by server
@@ -14,45 +12,17 @@ const useGame = (socketRef, socketReady) => {
     }
     const socket = socketRef.current;
     socket.on('gameData', message => {
-      setGameData(prevData => {
-        // Guard: ensure socket is still connected
-        if (!socketRef.current?.id) {
-          return message;
-        }
+      // Check for game start transition before updating state
+      const shouldNotifyGameStart =
+        message.stage === 'game' && prevStageRef.current === 'seating';
 
-        // Check for turn change notifications
-        const seatIndex = getSeatIndex(message, socketRef);
+      prevStageRef.current = message.stage;
+      setGameData(message);
 
-        // Only process turn notifications if player is seated (not a spectator)
-        if (seatIndex !== null) {
-          const isMyTurn = seatIndex === message.turnIndex;
-          const wasMyTurn = prevData && seatIndex === prevData.turnIndex;
-
-          // Only notify on turn change during active game
-          if (message.stage === 'game' && prevData?.stage === 'game') {
-            if (isMyTurn && !wasMyTurn && prevTurnIndexRef.current !== message.turnIndex) {
-              toast('Your turn!', {
-                icon: '🎴',
-                duration: 2000,
-                style: {
-                  background: '#21ba45',
-                  color: '#fff',
-                  fontWeight: '600',
-                },
-              });
-            }
-          }
-        }
-
-        // Notify when game starts (for all connected users)
-        if (message.stage === 'game' && prevStageRef.current === 'seating') {
-          toast.success('Game started!', { duration: 2000 });
-        }
-
-        prevTurnIndexRef.current = message.turnIndex;
-        prevStageRef.current = message.stage;
-        return message;
-      });
+      // Notify after state update to avoid setState during render
+      if (shouldNotifyGameStart) {
+        toast.success('Game started!', { duration: 2000 });
+      }
     });
     socket.on('playError', message => {
       console.warn('Play rejected:', message.message);

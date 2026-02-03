@@ -110,6 +110,7 @@ function executeAiPass(room, seatIndex, sendToEveryone, io, roomName) {
 
   // Record pass
   room.last[seatIndex] = 'pass';
+  room.lastPassSeat = seatIndex;
 
   // Log pass
   const playerName = room.aliases[seatId];
@@ -155,6 +156,7 @@ function executeAiPlay(room, seatIndex, play, sendToEveryone, io, roomName) {
 
   // Record last play for seat and reset others' pass status
   room.last = room.last.map((entry, idx) => (idx === seatIndex ? play.detection : null));
+  room.lastPassSeat = null; // clear pass indicator when cards are played
 
   // Log card play (use sorted board for consistent display)
   io.in(roomName).emit(CHAT, logCardPlay(playerName, play.detection, room.board));
