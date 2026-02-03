@@ -1,15 +1,87 @@
 import * as React from 'react';
 import { Modal, Button, Icon, Header, List } from 'semantic-ui-react';
+import confetti from 'canvas-confetti';
 import { getSeatIndex, isAiSeat } from './util.js';
 
 const PLACEMENT_LABELS = ['1st', '2nd', '3rd', '4th'];
 
+// Confetti celebration effect
+function fireConfetti(isWinner) {
+  const duration = isWinner ? 3000 : 1500;
+  const end = Date.now() + duration;
+
+  // Winner gets a big celebration
+  if (isWinner) {
+    // Initial burst
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#ffd700', '#ffb800', '#ff6b6b', '#4ecdc4', '#45b7d1'],
+    });
+
+    // Continuous confetti
+    const interval = setInterval(() => {
+      if (Date.now() > end) {
+        clearInterval(interval);
+        return;
+      }
+
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#ffd700', '#ffb800'],
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#ffd700', '#ffb800'],
+      });
+    }, 50);
+  } else {
+    // Non-winners get a smaller celebration
+    confetti({
+      particleCount: 50,
+      spread: 60,
+      origin: { y: 0.7 },
+      colors: ['#4ecdc4', '#45b7d1', '#96ceb4'],
+    });
+  }
+}
+
 export function GameOverModal({ gameData, socketRef, sendMessage, onClose }) {
+  const hasPlayedConfetti = React.useRef(false);
+
+  const playerSeatIndex = getSeatIndex(gameData, socketRef);
+
+  // Trigger confetti when modal opens
+  React.useEffect(() => {
+    if (gameData?.stage === 'done' && !hasPlayedConfetti.current) {
+      hasPlayedConfetti.current = true;
+      const playerRank = gameData.rank[playerSeatIndex];
+      const isWinner = playerRank === 1;
+
+      // Small delay to let modal animate in first
+      setTimeout(() => {
+        fireConfetti(isWinner);
+      }, 300);
+    }
+  }, [gameData?.stage, gameData?.rank, playerSeatIndex]);
+
+  // Reset confetti flag when modal closes
+  React.useEffect(() => {
+    return () => {
+      hasPlayedConfetti.current = false;
+    };
+  }, []);
+
   if (!gameData || gameData.stage !== 'done') {
     return null;
   }
-
-  const playerSeatIndex = getSeatIndex(gameData, socketRef);
 
   // Build placements array from rank data
   const placements = [];
