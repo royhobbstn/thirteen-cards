@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import Home from './Home';
 import Room from './Room';
 import MainMenu from './MainMenu';
@@ -31,6 +32,30 @@ function App() {
 
   return (
     <React.Fragment>
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+            borderRadius: '8px',
+            padding: '12px 16px',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
+          },
+          success: {
+            iconTheme: {
+              primary: '#21ba45',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ff4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
       <MainMenu
         roomNameLabel={roomNameLabel}
         socketRef={socketRef}
