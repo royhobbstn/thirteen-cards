@@ -257,17 +257,27 @@ table.ui.table.stats-table th {
 .active-turn {
   animation: pulseGlow 1.5s ease-in-out infinite;
   border-radius: 8px;
+  /* GPU acceleration for smooth glow pulse */
+  will-change: box-shadow;
+  transform: translate3d(0, 0, 0);
 }
 
 .active-turn-self {
   animation: pulseSelf 1.5s ease-in-out infinite;
   border-radius: 8px;
+  /* GPU acceleration for smooth glow pulse */
+  will-change: box-shadow;
+  transform: translate3d(0, 0, 0);
 }
 
 /* Card hover animations */
 .card-interactive {
   cursor: pointer;
   position: relative;
+  /* GPU acceleration for smooth animations */
+  will-change: transform, filter;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 }
 
 /* Only apply hover effects on devices that support hover (not touch) */
@@ -412,6 +422,10 @@ table.ui.table.stats-table th {
 
 .board-card {
   animation: cardSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  /* GPU acceleration for smooth card animations */
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 }
 
 .board-card-from-top {
@@ -460,6 +474,9 @@ table.ui.table.stats-table th {
   padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-xl);
   border: 3px solid rgba(255, 215, 0, 0.6);
+  /* GPU acceleration for smooth announcement animations */
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 .play-announcement-text {
@@ -608,6 +625,12 @@ table.ui.table.stats-table th {
   .game-btn:hover:not(:disabled) {
     transform: none;
   }
+
+  .ui.button:hover:not(:disabled),
+  .ui.button:active:not(:disabled),
+  .ui.primary.button:hover {
+    transform: none;
+  }
 }
 
 /* Game Over Modal Styles */
@@ -627,6 +650,9 @@ table.ui.table.stats-table th {
   border-radius: var(--radius-xl) !important;
   overflow: hidden;
   box-shadow: var(--shadow-xl), 0 0 60px rgba(255, 215, 0, 0.3);
+  /* GPU acceleration */
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 /* Backdrop blur for modal dimmer */
@@ -793,13 +819,27 @@ table.ui.table.stats-table th {
   transition: all var(--transition-base);
 }
 
+/* Subtle hover scale for all buttons - only on hover-capable devices */
+@media (hover: hover) and (pointer: fine) {
+  .ui.button:hover:not(:disabled):not(.animated) {
+    transform: scale(1.02);
+  }
+
+  .ui.button:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  .ui.primary.button:hover:not(:disabled) {
+    transform: translateY(-1px) scale(1.02);
+  }
+}
+
 .ui.primary.button {
   background: linear-gradient(135deg, var(--color-info), #1a6bb3);
 }
 
 .ui.primary.button:hover {
   background: linear-gradient(135deg, #3a9de0, var(--color-info));
-  transform: translateY(-1px);
 }
 
 /* Semantic UI Modal enhancements */
@@ -829,6 +869,14 @@ table.ui.table.stats-table tr:hover {
 /* Chat enhancements */
 .chat-container {
   font-family: var(--font-body);
+}
+
+/* Chat scrolling optimization for 60fps */
+.chat-messages-container {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
+  transform: translate3d(0, 0, 0);
 }
 
 /* Tab container styling */
@@ -1019,6 +1067,31 @@ table.ui.table.stats-table tr:hover {
   border-color: var(--color-gray-300) !important;
 }
 
+/* Dark mode accordion styling */
+[data-theme='dark'] .ui.styled.accordion,
+[data-theme='dark'] .ui.styled.accordion .accordion {
+  background: var(--surface-card) !important;
+  box-shadow: none !important;
+}
+
+[data-theme='dark'] .ui.styled.accordion .title,
+[data-theme='dark'] .ui.styled.accordion .accordion .title {
+  color: var(--color-gray-700) !important;
+  border-top-color: var(--color-gray-300) !important;
+}
+
+[data-theme='dark'] .ui.styled.accordion .title:hover,
+[data-theme='dark'] .ui.styled.accordion .accordion .title:hover {
+  color: var(--color-gray-800) !important;
+  background: var(--color-gray-200) !important;
+}
+
+[data-theme='dark'] .ui.styled.accordion .content,
+[data-theme='dark'] .ui.styled.accordion .accordion .content {
+  color: var(--color-gray-700) !important;
+  background: var(--color-gray-100) !important;
+}
+
 /* System preference dark mode component overrides */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .ui.menu,
@@ -1117,6 +1190,31 @@ table.ui.table.stats-table tr:hover {
   :root:not([data-theme='light']) .ui.bottom.attached.segment {
     background: var(--surface-card) !important;
     border-color: var(--color-gray-300) !important;
+  }
+
+  /* System preference accordion styling */
+  :root:not([data-theme='light']) .ui.styled.accordion,
+  :root:not([data-theme='light']) .ui.styled.accordion .accordion {
+    background: var(--surface-card) !important;
+    box-shadow: none !important;
+  }
+
+  :root:not([data-theme='light']) .ui.styled.accordion .title,
+  :root:not([data-theme='light']) .ui.styled.accordion .accordion .title {
+    color: var(--color-gray-700) !important;
+    border-top-color: var(--color-gray-300) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.styled.accordion .title:hover,
+  :root:not([data-theme='light']) .ui.styled.accordion .accordion .title:hover {
+    color: var(--color-gray-800) !important;
+    background: var(--color-gray-200) !important;
+  }
+
+  :root:not([data-theme='light']) .ui.styled.accordion .content,
+  :root:not([data-theme='light']) .ui.styled.accordion .accordion .content {
+    color: var(--color-gray-700) !important;
+    background: var(--color-gray-100) !important;
   }
 }
 
@@ -1525,6 +1623,9 @@ table.ui.table.stats-table tr:hover {
   box-shadow: var(--shadow-lg), 0 0 30px rgba(255, 215, 0, 0.5);
   animation: yourTurnSlideIn 2.5s ease-out forwards;
   pointer-events: none;
+  /* GPU acceleration */
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 .your-turn-banner-icon {

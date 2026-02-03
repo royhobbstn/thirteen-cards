@@ -106,6 +106,15 @@ export function CardSpace({
     }
   }, [gameData.gameId, cardObjects]);
 
+  // Cleanup timer on unmount - must be before any early returns
+  React.useEffect(() => {
+    return () => {
+      if (selectionTimerRef.current) {
+        clearTimeout(selectionTimerRef.current);
+      }
+    };
+  }, []);
+
   if (seatIndex === null) {
     return null;
   }
@@ -161,15 +170,6 @@ export function CardSpace({
     }
     toggleCard(cardId);
   }
-
-  // Cleanup timer on unmount
-  React.useEffect(() => {
-    return () => {
-      if (selectionTimerRef.current) {
-        clearTimeout(selectionTimerRef.current);
-      }
-    };
-  }, []);
 
   function submitHand() {
     sendMessage('submitHand', selectedCards);

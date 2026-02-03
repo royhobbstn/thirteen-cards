@@ -125,6 +125,12 @@ export const AI_DISPLAY_NAMES = {
   grandmaliu: 'Grandma Liu (Conservative)',
 };
 
+export const AI_PERSONA_DESCRIPTIONS = {
+  marcus: 'A well-rounded player who balances offense and defense. Makes calculated plays and adapts to the game state.',
+  eddie: 'An aggressive player who plays fast and uses high cards early. Aims to finish quickly at the risk of running out of strong cards.',
+  grandmaliu: 'A patient, conservative player who saves high cards for later. Plays defensively and waits for the right moment.',
+};
+
 // Theme helpers
 
 /**

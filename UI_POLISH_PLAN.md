@@ -37,12 +37,12 @@ The app already has solid foundations:
 ### Lower-Priority Improvements
 
 #### 5. Seat Selection Polish
+- ~~**Hover preview** of AI personality descriptions~~ (Implemented)
 - **Player avatars** instead of generic icons
-- **Hover preview** of AI personality descriptions
 - **Animated seat assignment**
 
 #### 6. Rules Tab Enhancement
-- **Collapsible sections**
+- ~~**Collapsible sections**~~ (Implemented)
 - **Card combination examples** with actual card images
 - **Interactive examples**
 
@@ -52,23 +52,23 @@ The app already has solid foundations:
 - **Haptic feedback** on plays (where supported)
 
 #### 8. Performance Polish
-- **GPU-accelerated animations** (`will-change`, `transform3d`)
+- ~~**GPU-accelerated animations** (`will-change`, `transform3d`)~~ (Implemented)
 - **Image lazy loading** for card assets
-- **Smooth 60fps** scroll in chat
+- ~~**Smooth 60fps** scroll in chat~~ (Implemented)
 
 #### 9. Chat Enhancements
 - **Typing indicator** ("Eddie is typing...")
-- **System message styling** with icons
+- ~~**System message styling** with icons~~ (Already implemented)
 
 ---
 
 ## Quick Wins (Low Effort, Noticeable Impact)
 
-| Enhancement | Effort | Impact |
-|-------------|--------|--------|
-| Card hover lift enhancement | 10 min | Medium |
-| Favicon + app icon polish | 15 min | Medium |
-| Button hover scale (1.02) | 5 min | Low |
+| Enhancement | Effort | Impact | Status |
+|-------------|--------|--------|--------|
+| Card hover lift enhancement | 10 min | Medium | Done |
+| Favicon + app icon polish | 15 min | Medium | Already exists |
+| Button hover scale (1.02) | 5 min | Low | Done |
 
 ---
 
@@ -92,3 +92,8 @@ Items that have been completed and removed from this plan:
 - Valid play glow effect on selected cards
 - Spotlight effect on current player's seat
 - "Your Turn" banner that slides in when it's your turn
+- AI persona hover tooltips in seat selection
+- Collapsible sections in Rules tab
+- GPU-accelerated animations with will-change hints
+- Smooth chat scrolling optimization
+- Button hover scale effects
